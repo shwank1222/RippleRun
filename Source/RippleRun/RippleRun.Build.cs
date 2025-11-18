@@ -18,6 +18,7 @@ public class RippleRun : ModuleRules
 			"UMG",
 			"CommonUI",
 			"CommonInput",
+			"GameplayTags"
 		});
 		
 		PublicIncludePaths.AddRange(new string[]

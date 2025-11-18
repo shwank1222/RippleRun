@@ -14,7 +14,6 @@ class RIPPLERUN_API ARRPlayerController : public APlayerController
 	GENERATED_BODY()
 	
 public:
-	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 	
 #pragma region Input
@@ -22,18 +21,6 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TArray<TObjectPtr<UInputMappingContext>> DefaultMappingContexts;
-	
-#pragma endregion
-
-#pragma region UI
-
-private:
-	void CreateRootWidget();
-	
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<UUserWidget> RootWidgetClass;
-	UPROPERTY()
-	TObjectPtr<UUserWidget> RootWidget;
 	
 #pragma endregion
 };
