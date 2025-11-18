@@ -15,6 +15,7 @@ public class RippleRun : ModuleRules
 			"Engine",
 			"InputCore",
 			"EnhancedInput",
+			"UMG"
 			"CommonUI",
 			"CommonInput",
 		});
