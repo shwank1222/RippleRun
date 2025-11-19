@@ -21,15 +21,17 @@ ASkippingStone::ASkippingStone()
     }
 
     if (!ProjectileMovementComp)
-    {
+    {   
         ProjectileMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
         ProjectileMovementComp->SetUpdatedComponent(StoneMeshComp);
-        ProjectileMovementComp->InitialSpeed = 3000.0f;
-        ProjectileMovementComp->MaxSpeed = 3000.0f;
+
         ProjectileMovementComp->bRotationFollowsVelocity = true;
+
         ProjectileMovementComp->bShouldBounce = true;
-        ProjectileMovementComp->Bounciness = 0.3f;
-        ProjectileMovementComp->ProjectileGravityScale = 0.0f;
+        ProjectileMovementComp->Bounciness = Bounciness;
+        ProjectileMovementComp->ProjectileGravityScale = GravityScale;
+
+        ProjectileMovementComp->bAutoActivate = false;
     }
 
     if(!ArrowComp)
@@ -41,17 +43,35 @@ ASkippingStone::ASkippingStone()
     
 }
 
-// Called when the game starts or when spawned
 void ASkippingStone::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+    ProjectileMovementComp->InitialSpeed = InitialSpeed;
+    ProjectileMovementComp->MaxSpeed = InitialSpeed * 1.5f;
 }
 
-// Called every frame
 void ASkippingStone::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ASkippingStone::SetRadius(float NewRadius)
+{
+	Radius = NewRadius;
+	// Update the scale of the stone mesh based on new radius
+}
+
+void ASkippingStone::SetThickness(float NewThickness)
+{
+	Thickness = NewThickness;
+	// Update the scale of the stone mesh based on new thickness
+}
+
+void ASkippingStone::ThrowStone()
+{
+    ProjectileMovementComp->Activate(true);
+	UE_LOG(LogTemp, Warning, TEXT("Stone Thrown with Initial Speed: %f"), ProjectileMovementComp->InitialSpeed);
 }
 
