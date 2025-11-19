@@ -14,7 +14,11 @@ public class RippleRun : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"InputCore",
-			"EnhancedInput"
+			"EnhancedInput",
+			"UMG",
+			"CommonUI",
+			"CommonInput",
+			"GameplayTags"
 		});
 		
 		PublicIncludePaths.AddRange(new string[]
