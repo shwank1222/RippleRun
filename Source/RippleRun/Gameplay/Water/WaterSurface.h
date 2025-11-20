@@ -32,31 +32,31 @@ protected:
 #pragma endregion
 
 #pragma region Water Parameters
-    // === ¹°¸®Àû ÆÄ¶ó¹ÌÅÍ: Æ¨±è °ü·Ã ===
+    // === ë¬¼ë¦¬ì  íŒŒë¼ë¯¸í„°: íŠ•ê¹€ ê´€ë ¨ ===
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Physics|Bounce")
-    float SurfaceTension = 0.5f;           // Æ¨±è ³­ÀÌµµ¿¡ ¿µÇâÀ» ÁÜ (0~1)
+    float SurfaceTension = 0.5f;           // íŠ•ê¹€ ë‚œì´ë„ì— ì˜í–¥ì„ ì¤Œ (0~1)
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Physics|Bounce")
-    float EnergyAbsorption = 0.3f;         // µ¹ ¼Óµµ °¨¼ÒÀ² (0~1)
+    float EnergyAbsorption = 0.3f;         // ëŒ ì†ë„ ê°ì†Œìœ¨ (0~1)
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Physics|Bounce")
-    float SpinDamping = 0.8f;              // µ¹ ½ºÇÉ °¨¼ÒÀ² (0~1)
+    float SpinDamping = 0.8f;              // ëŒ ìŠ¤í•€ ê°ì†Œìœ¨ (0~1)
 
-    // === ¹°¸®Àû ÆÄ¶ó¹ÌÅÍ: ¹°°á/ÀúÇ× °ü·Ã ===
+    // === ë¬¼ë¦¬ì  íŒŒë¼ë¯¸í„°: ë¬¼ê²°/ì €í•­ ê´€ë ¨ ===
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Physics|Wave")
-    float Viscosity = 0.2f;                // ¹° ÀúÇ×·Â
+    float Viscosity = 0.2f;                // ë¬¼ ì €í•­ë ¥
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Physics|Wave")
-    float WaveHeight = 10.0f;              // ±âº» ¹°°á ³ôÀÌ
+    float WaveHeight = 10.0f;              // ê¸°ë³¸ ë¬¼ê²° ë†’ì´
 
-    // === È¿°ú/ÀÌÆåÆ® ===
+    // === íš¨ê³¼/ì´í™íŠ¸ ===
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Effect")
-    UParticleSystem* SplashEffect;         // Ãæµ¹ ½Ã »ı¼ºÇÒ ½ºÇÃ·¡½Ã ÀÌÆåÆ®
+    UParticleSystem* SplashEffect;         // ì¶©ëŒ ì‹œ ìƒì„±í•  ìŠ¤í”Œë˜ì‹œ ì´í™íŠ¸
 
 #pragma endregion
 
 #pragma region Water Functions
-    // === ÇÔ¼ö ===
+    // === í•¨ìˆ˜ ===
     UFUNCTION(BlueprintCallable, Category = "Water|Effect")
     void GenerateWave(const FVector& HitLocation, float ImpactStrength);
 #pragma endregion

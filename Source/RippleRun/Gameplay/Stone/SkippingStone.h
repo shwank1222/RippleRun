@@ -41,43 +41,43 @@ public:
 protected:
 	// --- Initial Throw ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Throw")
-	float InitialSpeed = 3000.0f;          // ´øÁú ¶§ ÃÊ±â ¼Óµµ
+	float InitialSpeed = 3000.0f;          // ë˜ì§ˆ ë•Œ ì´ˆê¸° ì†ë„
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Throw")
-	float ThrowAngle = 45.0f;              // ÅõÃ´ °¢µµ (Pitch ±âÁØ)
+	float ThrowAngle = 45.0f;              // íˆ¬ì²™ ê°ë„ (Pitch ê¸°ì¤€)
 
 	// --- Physical Characteristic  ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Physics")
-	float Mass = 0.15f;                     // µ¹ Áú·® (kg)
+	float Mass = 0.15f;                     // ëŒ ì§ˆëŸ‰ (kg)
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Physics")
-	float Radius = 0.03f;                   // µ¹ ¹İÁö¸§ (m)
+	float Radius = 0.03f;                   // ëŒ ë°˜ì§€ë¦„ (m)
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Physics")
-	float Thickness = 0.01f;                // µ¹ µÎ²² (m)
+	float Thickness = 0.01f;                // ëŒ ë‘ê»˜ (m)
 
 	// --- Rotation / Spin ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Spin")
-	float SpinRate = 20.0f;                 // È¸Àü ¼Óµµ (rad/s)
+	float SpinRate = 20.0f;                 // íšŒì „ ì†ë„ (rad/s)
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Spin")
-	float LinearDrag = 0.05f;               // ¼±¼Óµµ °¨¼è
+	float LinearDrag = 0.05f;               // ì„ ì†ë„ ê°ì‡ 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Spin")
-	float AngularDrag = 0.1f;               // È¸Àü °¨¼è
+	float AngularDrag = 0.1f;               // íšŒì „ ê°ì‡ 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Bounce")
-	float EnergyRetention = 0.7f;           // Æ¨±ä ÈÄ ¼Óµµ À¯Áö ºñÀ² (0~1)
+	float EnergyRetention = 0.7f;           // íŠ•ê¸´ í›„ ì†ë„ ìœ ì§€ ë¹„ìœ¨ (0~1)
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Bounce")
-	float SpinDamping = 0.9f;               // Æ¨±ä ÈÄ ½ºÇÉ À¯Áö ºñÀ² (0~1)
+	float SpinDamping = 0.9f;               // íŠ•ê¸´ í›„ ìŠ¤í•€ ìœ ì§€ ë¹„ìœ¨ (0~1)
 
 	// --- Bounce / Resistance ---
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Resistance")
-	float CriticalBounceAngle = 60.0f;      // ÀÓ°è ÀÔ»ç°¢(µµ), ÀÌÇÏ¸é Æ¨±è
+	float CriticalBounceAngle = 60.0f;      // ì„ê³„ ì…ì‚¬ê°(ë„), ì´í•˜ë©´ íŠ•ê¹€
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Resistance")
-	float CurrentMedium = 0.0f;              // ÇöÀç ¸ÅÁú (0: °ø±â, 1: ¹°)
+	float CurrentMedium = 0.0f;              // í˜„ì¬ ë§¤ì§ˆ (0: ê³µê¸°, 1: ë¬¼)
 	
 	// for projectile component prototype
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters")
