@@ -4,60 +4,63 @@
 #include "WaterSurface.generated.h"
 
 class UBoxComponent;
+class ASkippingStone;
 
 UCLASS()
 class RIPPLERUN_API AWaterSurface : public AActor
 {
-	GENERATED_BODY()
-	
-#pragma region Constructor and Overrides
+    GENERATED_BODY()
+
 public:
     AWaterSurface();
 
 protected:
     virtual void BeginPlay() override;
 
-#pragma endregion
-
 #pragma region Components
 protected:
-    // === Visual ===
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Visual")
     UStaticMeshComponent* WaterMesh;
 
-    // === Collision ===
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Collision")
     UBoxComponent* WaterCollision;
 
 #pragma endregion
 
-#pragma region Water Parameters
-    // === 물리적 파라미터: 튕김 관련 ===
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Physics|Bounce")
-    float SurfaceTension = 0.5f;           // 튕김 난이도에 영향을 줌 (0~1)
+#pragma region Parameters
+public:
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Physics|Bounce")
-    float EnergyAbsorption = 0.3f;         // 돌 속도 감소율 (0~1)
+    // 물 저항 (글라이드, 접촉 시 감쇠에 사용)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Physics")
+    float Viscosity = 0.2f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Physics|Bounce")
-    float SpinDamping = 0.8f;              // 돌 스핀 감소율 (0~1)
-
-    // === 물리적 파라미터: 물결/저항 관련 ===
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Physics|Wave")
-    float Viscosity = 0.2f;                // 물 저항력
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Physics|Wave")
-    float WaveHeight = 10.0f;              // 기본 물결 높이
-
-    // === 효과/이펙트 ===
+    // 스플래시 / 파동 세기
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Effect")
-    UParticleSystem* SplashEffect;         // 충돌 시 생성할 스플래시 이펙트
+    float WaveStrength = 10.f;
+
+    // 이펙트
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Effect")
+    UParticleSystem* SplashEffect;
 
 #pragma endregion
 
-#pragma region Water Functions
-    // === 함수 ===
-    UFUNCTION(BlueprintCallable, Category = "Water|Effect")
+#pragma region Functions
+public:
+
+    UFUNCTION(BlueprintCallable)
     void GenerateWave(const FVector& HitLocation, float ImpactStrength);
+
+private:
+    UFUNCTION()
+    void HandleStoneOverlap(
+        UPrimitiveComponent* OverlappedComp,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex,
+        bool bFromSweep,
+        const FHitResult& SweepResult
+    );
+
 #pragma endregion
 };

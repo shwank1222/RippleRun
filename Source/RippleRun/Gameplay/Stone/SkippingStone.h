@@ -3,111 +3,118 @@
 #include "GameFramework/Actor.h"
 #include "SkippingStone.generated.h"
 
-class UProjectileMovementComponent;
+class AWaterSurface;
 class UArrowComponent;
+
+UENUM(BlueprintType)
+enum class EStoneState : uint8
+{
+    Airborne,
+    WaterContact,
+    Bouncing,   // 1 frame only
+    Glide,
+    Sunk
+};
 
 UCLASS()
 class RIPPLERUN_API ASkippingStone : public AActor
 {
-	GENERATED_BODY()
-	
-#pragma region Constructor and Overrides
-public:	
-	ASkippingStone();
-
-protected:
-	virtual void BeginPlay() override;
+    GENERATED_BODY()
 
 public:
-	virtual void Tick(float DeltaTime) override;
-
-#pragma endregion
+    ASkippingStone();
+    virtual void BeginPlay() override;
+    virtual void Tick(float DeltaTime) override;
 
 #pragma region Components
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stone|Component")
-	UStaticMeshComponent* StoneMeshComp;
-
-	//for prototype
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stone|Component")
-	UProjectileMovementComponent* ProjectileMovementComp;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stone|Component")
-	UArrowComponent* ArrowComp;
-
-#pragma endregion
-
-#pragma region Stone Parameters
-protected:
-	// --- Initial Throw ---
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Throw")
-	float InitialSpeed = 3000.0f;          // 던질 때 초기 속도
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Throw")
-	float ThrowAngle = 45.0f;              // 투척 각도 (Pitch 기준)
-
-	// --- Physical Characteristic  ---
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Physics")
-	float Mass = 0.15f;                     // 돌 질량 (kg)
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Physics")
-	float Radius = 0.03f;                   // 돌 반지름 (m)
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Physics")
-	float Thickness = 0.01f;                // 돌 두께 (m)
-
-	// --- Rotation / Spin ---
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Spin")
-	float SpinRate = 20.0f;                 // 회전 속도 (rad/s)
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Spin")
-	float LinearDrag = 0.05f;               // 선속도 감쇠
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Spin")
-	float AngularDrag = 0.1f;               // 회전 감쇠
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Bounce")
-	float EnergyRetention = 0.7f;           // 튕긴 후 속도 유지 비율 (0~1)
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Bounce")
-	float SpinDamping = 0.9f;               // 튕긴 후 스핀 유지 비율 (0~1)
-
-	// --- Bounce / Resistance ---
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Resistance")
-	float CriticalBounceAngle = 60.0f;      // 임계 입사각(도), 이하면 튕김
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters|Resistance")
-	float CurrentMedium = 0.0f;              // 현재 매질 (0: 공기, 1: 물)
-	
-	// for projectile component prototype
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters")
-	float Bounciness = 0.3f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Parameters")
-	float GravityScale = 1.0f;
-
-#pragma endregion
-
-#pragma region Setters and Getters
 public:
-	UFUNCTION(BlueprintCallable, Category = "Stone|Parameters")
-	FORCEINLINE void SetInitialSpeed(float NewSpeed) { InitialSpeed = NewSpeed; }
-	UFUNCTION(BlueprintCallable, Category = "Stone|Parameters")
-	FORCEINLINE void SetThrowAngle(float NewAngle) { ThrowAngle = NewAngle; }
-	UFUNCTION(BlueprintCallable, Category = "Stone|Parameters")
-	FORCEINLINE void SetSpinRate(float NewSpinRate) { SpinRate = NewSpinRate; }
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stone|Component")
+    UStaticMeshComponent* StoneMeshComp;
 
-	UFUNCTION(BlueprintCallable, Category = "Stone|Parameters")
-	FORCEINLINE void SetMass(float NewMass) { Mass = NewMass; }
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stone|Component")
+    UArrowComponent* ArrowComp;
+#pragma endregion
 
-	UFUNCTION(BlueprintCallable, Category = "Stone|Parameters")
-	void SetRadius(float NewMass);
-	UFUNCTION(BlueprintCallable, Category = "Stone|Parameters")
-	void SetThickness(float NewMass);
+#pragma region Parameters
+protected:
+
+    // Throw
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Throw")
+    float InitialSpeed = 800.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Throw")
+    float ThrowAngle = 45.f;
+
+    // Physical
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
+    float Mass = 0.15f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
+    float Radius = 0.03f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
+    float Thickness = 0.01f;
+
+    // Spin
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Spin")
+    float SpinRate = 20.f;  // rad/s
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Spin")
+    float AngularDrag = 0.1f;
+
+    // Drag
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Resistance")
+    float LinearDrag = 0.05f;
+
+    // Bounce / skim
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Bounce")
+    float EnergyRetention = 0.7f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Bounce")
+    float SpinDamping = 0.9f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Bounce")
+    float CriticalBounceAngle = 25.f;
+
+    // Lift tuning
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Lift")
+    float LiftScale = 0.0005f;
 
 #pragma endregion
 
-#pragma region Stone Functionality
-	public:
-	UFUNCTION(BlueprintCallable, Category = "Stone|Functionality")
-	void ThrowStone();
+#pragma region Stone Logic
+public:
+    UFUNCTION(BlueprintCallable)
+    void ThrowStone();
+
+    void EnterWaterContact(AWaterSurface* Water, const FVector& HitPoint);
+
+private:
+    void ApplyPhysics(float DeltaTime);
+    void TickAirborne(float DeltaTime);
+    void TickBouncing(float DeltaTime);
+    void TickGlide(float DeltaTime);
+
+    bool ShouldBounce() const;
+    float ComputeIncidenceAngle() const;
+    float ComputeLift() const;
+    
+    void SetStoneState(EStoneState NewState);
+
+#pragma endregion
+
+#pragma region Runtime Variables
+private:
+    FVector Velocity;
+    FVector SpinAxis;
+    EStoneState State = EStoneState::Airborne;
+
+    // For WaterContact
+    AWaterSurface* LastWater = nullptr;
+    FVector ContactPoint;
+
+    // Internal
+    int32 BounceFrameCounter = 0;
+
+#pragma endregion
 };
