@@ -26,8 +26,49 @@ void ASkippingStone::BeginPlay()
     SetActorTickEnabled(false);
 }
 
+void ASkippingStone::SetRadius(float NewRadius)
+{
+    Radius = NewRadius;
+
+    FVector Scale = StoneMeshComp->GetRelativeScale3D();
+
+    float RadiusScale = Radius / BaseRadius;
+
+    Scale.X = RadiusScale;
+    Scale.Y = RadiusScale;
+
+    StoneMeshComp->SetRelativeScale3D(Scale);
+}
+
+void ASkippingStone::SetThickness(float NewThickness)
+{
+    Thickness = NewThickness;
+
+    FVector Scale = StoneMeshComp->GetRelativeScale3D();
+
+    float ThicknessScale = Thickness / BaseThickness;
+
+    Scale.Z = ThicknessScale;
+
+    StoneMeshComp->SetRelativeScale3D(Scale);
+}
+
+void ASkippingStone::SetTilt(float NewPitch, float NewRoll)
+{
+    TiltPitch = NewPitch;
+    TiltRoll = NewRoll;
+
+    FRotator NewRot = StoneMeshComp->GetRelativeRotation();
+    NewRot.Pitch = TiltPitch;
+    NewRot.Roll = TiltRoll;
+
+    StoneMeshComp->SetRelativeRotation(NewRot);
+}
+
 void ASkippingStone::ThrowStone()
 {
+    if (State != EStoneState::None) { return; }
+
     FRotator ThrowRot = GetActorRotation();
     ThrowRot.Pitch += ThrowAngle;
     Velocity = ThrowRot.Vector() * InitialSpeed;
@@ -64,6 +105,9 @@ void ASkippingStone::ApplyPhysics(float DeltaTime)
         if (ShouldBounce())
         {
             SetStoneState(EStoneState::Bouncing);
+			BounceCount += 1;
+			OnStoneBounced.Broadcast(this, BounceCount);
+
             BounceFrameCounter = 1;
         }
         else
@@ -89,6 +133,18 @@ void ASkippingStone::ApplyPhysics(float DeltaTime)
         Velocity -= Velocity * WaterDrag * DeltaTime;
 
         SpinRate *= 0.95f;
+
+		// Check for end condition
+        SunkElapsed += DeltaTime;
+
+        if (SunkElapsed > EndSinkDelay)
+        {
+            if (Velocity.Size() < EndSpeedThreshold)
+            {
+				UE_LOG(LogTemp, Log, TEXT("Stone Finished"));
+                OnStoneFinished.Broadcast(this);
+            }
+        }
 
         break;;
     }
@@ -125,6 +181,7 @@ void ASkippingStone::SetStoneState(EStoneState NewState)
             *UEnum::GetValueAsString(State),
             *UEnum::GetValueAsString(NewState)
         );
+
         State = NewState;
     }
 }

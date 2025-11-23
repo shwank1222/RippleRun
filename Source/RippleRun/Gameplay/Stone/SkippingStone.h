@@ -9,12 +9,16 @@ class UArrowComponent;
 UENUM(BlueprintType)
 enum class EStoneState : uint8
 {
+    None,
     Airborne,
     WaterContact,
-    Bouncing,   // 1 frame only
+    Bouncing,
     Glide,
     Sunk
 };
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStoneFinished, ASkippingStone*, Stone);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStoneBounced, ASkippingStone*, Stone, int32, Count);
 
 UCLASS()
 class RIPPLERUN_API ASkippingStone : public AActor
@@ -35,6 +39,29 @@ public:
     UArrowComponent* ArrowComp;
 #pragma endregion
 
+#pragma region Setters
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void SetThrowAngle(float NewAngle) { ThrowAngle = NewAngle; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void SetSpinRate(float NewSpinRate) { SpinRate = NewSpinRate; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void SetInitialSpeed(float NewSpeed) { InitialSpeed = NewSpeed; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void SetMass(float NewMass) { Mass = NewMass; }
+
+	UFUNCTION(BlueprintCallable)
+    void SetRadius(float NewRadius);
+	UFUNCTION(BlueprintCallable)
+	void SetThickness(float NewThickness);
+
+    UFUNCTION(BlueprintCallable)
+    void SetTilt(float NewPitch, float NewRoll);
+
+#pragma endregion
+
 #pragma region Parameters
 protected:
 
@@ -47,13 +74,10 @@ protected:
 
     // Physical
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
-    float Mass = 0.15f;
+	float BaseRadius = 5.f; // Standard mesh radius
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
-    float Radius = 0.03f;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
-    float Thickness = 0.01f;
+	float BaseThickness = 2.f; // Standard mesh thickness
 
     // Spin
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Spin")
@@ -79,6 +103,22 @@ protected:
     // Lift tuning
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Lift")
     float LiftScale = 0.0005f;
+
+	// Finish conditions
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Finish")
+    float EndSpeedThreshold = 70.f;     
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Finish")
+    float EndSinkDelay = 1.0f;
+
+
+private:
+    float Mass = 0.15f;
+    float Radius = 0.03f;
+    float Thickness = 0.01f;
+
+	float TiltPitch = 0.f;
+	float TiltRoll = 0.f;
 
 #pragma endregion
 
@@ -107,14 +147,27 @@ private:
 private:
     FVector Velocity;
     FVector SpinAxis;
-    EStoneState State = EStoneState::Airborne;
+    EStoneState State = EStoneState::None;
 
     // For WaterContact
     AWaterSurface* LastWater = nullptr;
     FVector ContactPoint;
 
     // Internal
+	int32 BounceCount = 0;
     int32 BounceFrameCounter = 0;
+
+    float SunkElapsed = 0.f;
+
+	bool bHasThrown = false;
+
+#pragma endregion
+
+#pragma region Delegates
+    UPROPERTY(BlueprintAssignable, Category = "Stone|Event")
+    FOnStoneFinished OnStoneFinished;
+	UPROPERTY(BlueprintAssignable, Category = "Stone|Event")
+	FOnStoneBounced OnStoneBounced;
 
 #pragma endregion
 };
