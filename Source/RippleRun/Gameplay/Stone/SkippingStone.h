@@ -61,6 +61,19 @@ public:
     void SetTilt(float NewPitch, float NewRoll);
 
 #pragma endregion
+	
+#pragma region Getters
+	
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetMass() const { return Mass; }
+	
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetRadius() const { return Radius; }
+	
+	UFUNCTION(BlueprintPure)
+	FORCEINLINE float GetThickness() const { return Thickness; }
+	
+#pragma endregion
 
 #pragma region Parameters
 protected:
