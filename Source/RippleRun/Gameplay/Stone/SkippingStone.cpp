@@ -55,12 +55,12 @@ void ASkippingStone::SetThickness(float NewThickness)
 
 void ASkippingStone::SetTilt(float NewPitch, float NewRoll)
 {
-    TiltPitch = NewPitch;
-    TiltRoll = NewRoll;
-
+    // TiltPitch = NewPitch;
+    // TiltRoll = NewRoll;
+    
     FRotator NewRot = StoneMeshComp->GetRelativeRotation();
-    NewRot.Pitch = TiltPitch;
-    NewRot.Roll = TiltRoll;
+    NewRot.Pitch = FMath::Clamp(NewRot.Pitch + NewPitch, -5.0f, 30.0f);
+    NewRot.Roll = FMath::Clamp(NewRot.Roll + NewRoll, -20.0f, 20.0f);
 
     StoneMeshComp->SetRelativeRotation(NewRot);
 }
@@ -213,18 +213,18 @@ void ASkippingStone::TickBouncing(float DeltaTime)
     {
         FVector Normal = FVector::UpVector;
 
-        // ±âº» ¹Ý»ç
+        // ï¿½âº» ï¿½Ý»ï¿½
         FVector Ref = Velocity.MirrorByVector(Normal);
 
-        // ¿¡³ÊÁö À¯Áö
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         Ref *= EnergyRetention;
 
-        // Lift Àû¿ë
+        // Lift ï¿½ï¿½ï¿½ï¿½
         Ref.Z += ComputeLift();
 
         Velocity = Ref;
 
-        // ½ºÇÉ °¨¼Ò
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         SpinRate *= SpinDamping;
 
         BounceFrameCounter--;
@@ -237,16 +237,16 @@ void ASkippingStone::TickBouncing(float DeltaTime)
 
 void ASkippingStone::TickGlide(float DeltaTime)
 {
-    // ¹Ì¼¼ÇÑ Lift ¡æ ¼ö¸é À§ ½ºÄ§
+    // ï¿½Ì¼ï¿½ï¿½ï¿½ Lift ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Ä§
     Velocity.Z += ComputeLift() * DeltaTime;
 
-    // ¹° ÀúÇ×
+    // ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     Velocity -= Velocity * (LinearDrag * 2.f) * DeltaTime;
 
-    // Spin °¨¼Ò
+    // Spin ï¿½ï¿½ï¿½ï¿½
     SpinRate -= SpinRate * (AngularDrag * 0.5f) * DeltaTime;
 
-    // Z ¼Óµµ°¡ ¾ç¼ö°¡ µÇ¸é ´Ù½Ã Airborne
+    // Z ï¿½Óµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç¸ï¿½ ï¿½Ù½ï¿½ Airborne
     if (Velocity.Z > 0)
     {
         SetStoneState(EStoneState::Airborne);
