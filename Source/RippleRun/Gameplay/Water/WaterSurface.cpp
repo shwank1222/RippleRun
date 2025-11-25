@@ -46,7 +46,7 @@ void AWaterSurface::HandleStoneOverlap(
     if (Stone)
     {
         // 물 접촉을 Stone에게 전달
-        Stone->EnterWaterContact(this, SweepResult.ImpactPoint);
+        Stone->HandleWaterContact(this, SweepResult.ImpactPoint);
 
         if (SplashEffect)
         {

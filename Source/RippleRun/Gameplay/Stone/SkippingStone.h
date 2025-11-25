@@ -39,7 +39,7 @@ public:
     UArrowComponent* ArrowComp;
 #pragma endregion
 
-#pragma region Setters
+#pragma region Setters & Getters
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE void SetThrowAngle(float NewAngle) { ThrowAngle = NewAngle; }
 
@@ -59,6 +59,29 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void SetTilt(float NewPitch, float NewRoll);
+
+	// Getters
+    UFUNCTION(BlueprintCallable, Category = "Stone|Stat")
+	FORCEINLINE float GetRadius() const { return Radius; }
+
+	UFUNCTION(BlueprintCallable, Category = "Stone|Stat")
+	FORCEINLINE float GetThickness() const { return Thickness; }
+
+	UFUNCTION(BlueprintCallable, Category = "Stone|Stat")
+	FORCEINLINE float GetMass() const { return Mass; }
+
+
+	UFUNCTION(BlueprintCallable, Category = "Stone|Runtime")
+	FORCEINLINE float GetTimeElapsed() const { return TimeElapsed; }
+
+	UFUNCTION(BlueprintCallable, Category = "Stone|Runtime")
+	FORCEINLINE int32 GetBounceCount() const { return BounceCount; }
+
+	UFUNCTION(BlueprintCallable, Category = "Stone|Runtime")
+	FORCEINLINE float GetForwardDistance() const { return ForwardDistance; }
+
+	UFUNCTION(BlueprintCallable, Category = "Stone|Runtime")
+	FORCEINLINE float GetFinalDistance() const { return FinalDistance; }
 
 #pragma endregion
 	
@@ -137,10 +160,10 @@ private:
 
 #pragma region Stone Logic
 public:
-    UFUNCTION(BlueprintCallable)
+    UFUNCTION(BlueprintCallable, Category = "Stone|Physics")
     void ThrowStone();
 
-    void EnterWaterContact(AWaterSurface* Water, const FVector& HitPoint);
+    void HandleWaterContact(AWaterSurface* Water, const FVector& HitPoint);
 
 private:
     void ApplyPhysics(float DeltaTime);
@@ -149,12 +172,18 @@ private:
     void TickGlide(float DeltaTime);
 
     bool ShouldBounce() const;
+
     float ComputeIncidenceAngle() const;
     float ComputeLift() const;
-    
+
     void SetStoneState(EStoneState NewState);
 
 #pragma endregion
+
+#pragma region Utility Functions
+public:
+	UFUNCTION(BlueprintCallable, Category = "Stone|Utility")
+    void MakeRandomStats();
 
 #pragma region Runtime Variables
 private:
@@ -170,13 +199,21 @@ private:
 	int32 BounceCount = 0;
     int32 BounceFrameCounter = 0;
 
+    float TimeElapsed = 0.f;
     float SunkElapsed = 0.f;
+    
+    FVector ThrowStartLocation;
+    FVector ThrowDirection;
 
-	bool bHasThrown = false;
+    float FinalDistance = 0.f;
+    float ForwardDistance = 0.f;
+
+    bool bHasThrown = false;
 
 #pragma endregion
 
 #pragma region Delegates
+
     UPROPERTY(BlueprintAssignable, Category = "Stone|Event")
     FOnStoneFinished OnStoneFinished;
 	UPROPERTY(BlueprintAssignable, Category = "Stone|Event")
