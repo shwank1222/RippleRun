@@ -26,6 +26,18 @@ void ASkippingStone::BeginPlay()
     SetActorTickEnabled(false);
 }
 
+void ASkippingStone::MakeRandomStats()
+{
+    float NewRadius = FMath::FRandRange(3.f, 10.f);
+    SetRadius(NewRadius);
+
+    float NewThickness = FMath::FRandRange(1.f, 3.5f);
+    SetThickness(NewThickness);
+
+	float NewMass = FMath::FRandRange(0.05f, 0.3f);
+	SetMass(NewMass);
+}
+
 void ASkippingStone::SetRadius(float NewRadius)
 {
     Radius = NewRadius;
@@ -55,9 +67,6 @@ void ASkippingStone::SetThickness(float NewThickness)
 
 void ASkippingStone::SetTilt(float NewPitch, float NewRoll)
 {
-    // TiltPitch = NewPitch;
-    // TiltRoll = NewRoll;
-    
     FRotator NewRot = StoneMeshComp->GetRelativeRotation();
     NewRot.Pitch = FMath::Clamp(NewRot.Pitch + NewPitch, -5.0f, 30.0f);
     NewRot.Roll = FMath::Clamp(NewRot.Roll + NewRoll, -20.0f, 20.0f);
@@ -135,15 +144,17 @@ void ASkippingStone::ApplyPhysics(float DeltaTime)
         SpinRate *= 0.95f;
 
 		// Check for end condition
-        SunkElapsed += DeltaTime;
+        //SunkElapsed += DeltaTime;
 
-        if (SunkElapsed > EndSinkDelay)
+        //if (SunkElapsed > EndSinkDelay)
+        //{
+
+        //}
+        
+        if (Velocity.Size() < EndSpeedThreshold)
         {
-            if (Velocity.Size() < EndSpeedThreshold)
-            {
-				UE_LOG(LogTemp, Log, TEXT("Stone Finished"));
-                OnStoneFinished.Broadcast(this);
-            }
+            UE_LOG(LogTemp, Log, TEXT("Stone Finished"));
+            OnStoneFinished.Broadcast(this);
         }
 
         break;;
@@ -213,18 +224,14 @@ void ASkippingStone::TickBouncing(float DeltaTime)
     {
         FVector Normal = FVector::UpVector;
 
-        // �⺻ �ݻ�
         FVector Ref = Velocity.MirrorByVector(Normal);
 
-        // ������ ����
         Ref *= EnergyRetention;
 
-        // Lift ����
         Ref.Z += ComputeLift();
 
         Velocity = Ref;
 
-        // ���� ����
         SpinRate *= SpinDamping;
 
         BounceFrameCounter--;
@@ -237,16 +244,12 @@ void ASkippingStone::TickBouncing(float DeltaTime)
 
 void ASkippingStone::TickGlide(float DeltaTime)
 {
-    // �̼��� Lift �� ���� �� ��ħ
     Velocity.Z += ComputeLift() * DeltaTime;
 
-    // �� ����
     Velocity -= Velocity * (LinearDrag * 2.f) * DeltaTime;
 
-    // Spin ����
     SpinRate -= SpinRate * (AngularDrag * 0.5f) * DeltaTime;
 
-    // Z �ӵ��� ����� �Ǹ� �ٽ� Airborne
     if (Velocity.Z > 0)
     {
         SetStoneState(EStoneState::Airborne);
@@ -257,7 +260,7 @@ void ASkippingStone::TickGlide(float DeltaTime)
 
 #pragma region Water Contact
 
-void ASkippingStone::EnterWaterContact(AWaterSurface* Water, const FVector& HitPoint)
+void ASkippingStone::HandleWaterContact(AWaterSurface* Water, const FVector& HitPoint)
 {
     LastWater = Water;
     ContactPoint = HitPoint;
