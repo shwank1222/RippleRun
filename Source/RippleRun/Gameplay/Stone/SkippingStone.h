@@ -61,14 +61,27 @@ public:
     void SetTilt(float NewPitch, float NewRoll);
 
 	// Getters
-    UFUNCTION(BlueprintCallable)
+    UFUNCTION(BlueprintCallable, Category = "Stone|Stat")
 	FORCEINLINE float GetRadius() const { return Radius; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Stone|Stat")
 	FORCEINLINE float GetThickness() const { return Thickness; }
 
-    UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Stone|Stat")
 	FORCEINLINE float GetMass() const { return Mass; }
+
+
+	UFUNCTION(BlueprintCallable, Category = "Stone|Runtime")
+	FORCEINLINE float GetTimeElapsed() const { return TimeElapsed; }
+
+	UFUNCTION(BlueprintCallable, Category = "Stone|Runtime")
+	FORCEINLINE int32 GetBounceCount() const { return BounceCount; }
+
+	UFUNCTION(BlueprintCallable, Category = "Stone|Runtime")
+	FORCEINLINE float GetForwardDistance() const { return ForwardDistance; }
+
+	UFUNCTION(BlueprintCallable, Category = "Stone|Runtime")
+	FORCEINLINE float GetFinalDistance() const { return FinalDistance; }
 
 #pragma endregion
 
@@ -146,14 +159,16 @@ private:
     void TickGlide(float DeltaTime);
 
     bool ShouldBounce() const;
+
     float ComputeIncidenceAngle() const;
     float ComputeLift() const;
-    
+
     void SetStoneState(EStoneState NewState);
 
 #pragma endregion
 
-#pragma regions Utility Functions
+#pragma region Utility Functions
+public:
 	UFUNCTION(BlueprintCallable, Category = "Stone|Utility")
     void MakeRandomStats();
 
@@ -171,9 +186,16 @@ private:
 	int32 BounceCount = 0;
     int32 BounceFrameCounter = 0;
 
+    float TimeElapsed = 0.f;
     float SunkElapsed = 0.f;
+    
+    FVector ThrowStartLocation;
+    FVector ThrowDirection;
 
-	bool bHasThrown = false;
+    float FinalDistance = 0.f;
+    float ForwardDistance = 0.f;
+
+    bool bHasThrown = false;
 
 #pragma endregion
 
