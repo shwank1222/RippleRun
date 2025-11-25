@@ -39,7 +39,7 @@ public:
     UArrowComponent* ArrowComp;
 #pragma endregion
 
-#pragma region Setters
+#pragma region Setters & Getters
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE void SetThrowAngle(float NewAngle) { ThrowAngle = NewAngle; }
 
@@ -59,6 +59,16 @@ public:
 
     UFUNCTION(BlueprintCallable)
     void SetTilt(float NewPitch, float NewRoll);
+
+	// Getters
+    UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetRadius() const { return Radius; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetThickness() const { return Thickness; }
+
+    UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetMass() const { return Mass; }
 
 #pragma endregion
 
@@ -124,10 +134,10 @@ private:
 
 #pragma region Stone Logic
 public:
-    UFUNCTION(BlueprintCallable)
+    UFUNCTION(BlueprintCallable, Category = "Stone|Physics")
     void ThrowStone();
 
-    void EnterWaterContact(AWaterSurface* Water, const FVector& HitPoint);
+    void HandleWaterContact(AWaterSurface* Water, const FVector& HitPoint);
 
 private:
     void ApplyPhysics(float DeltaTime);
@@ -142,6 +152,10 @@ private:
     void SetStoneState(EStoneState NewState);
 
 #pragma endregion
+
+#pragma regions Utility Functions
+	UFUNCTION(BlueprintCallable, Category = "Stone|Utility")
+    void MakeRandomStats();
 
 #pragma region Runtime Variables
 private:
@@ -164,6 +178,7 @@ private:
 #pragma endregion
 
 #pragma region Delegates
+
     UPROPERTY(BlueprintAssignable, Category = "Stone|Event")
     FOnStoneFinished OnStoneFinished;
 	UPROPERTY(BlueprintAssignable, Category = "Stone|Event")
