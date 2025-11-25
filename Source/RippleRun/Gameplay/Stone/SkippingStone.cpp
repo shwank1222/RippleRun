@@ -78,6 +78,12 @@ void ASkippingStone::ThrowStone()
 {
     if (State != EStoneState::None) { return; }
 
+    TimeElapsed = 0.f;
+    ForwardDistance = 0.f;
+
+    ThrowStartLocation = GetActorLocation();
+    ThrowDirection = GetActorForwardVector().GetSafeNormal();
+
     FRotator ThrowRot = GetActorRotation();
     ThrowRot.Pitch += ThrowAngle;
     Velocity = ThrowRot.Vector() * InitialSpeed;
@@ -91,6 +97,12 @@ void ASkippingStone::ThrowStone()
 void ASkippingStone::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    TimeElapsed += DeltaTime;
+
+    ForwardDistance =
+        FVector::DotProduct(GetActorLocation() - ThrowStartLocation, ThrowDirection);
+
     ApplyPhysics(DeltaTime);
 
     // Update position
@@ -122,6 +134,7 @@ void ASkippingStone::ApplyPhysics(float DeltaTime)
         else
         {
             SetStoneState(EStoneState::Sunk);
+			FinalDistance = ForwardDistance;
         }
         break;
 
@@ -183,6 +196,7 @@ float ASkippingStone::ComputeLift() const
 {
     return SpinRate * Velocity.Size() * LiftScale;
 }
+
 
 void ASkippingStone::SetStoneState(EStoneState NewState)
 {
