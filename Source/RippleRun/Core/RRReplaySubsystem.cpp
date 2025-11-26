@@ -28,6 +28,8 @@ void URRReplaySubsystem::PlayReplay()
 
 	FNetworkReplayDelegates::OnReplayPlaybackComplete.AddUObject(this, &ThisClass::OnReplayPlaybackComplete);
 
+	bIsReplaying = true;
+	
 	GetGameInstance()->PlayReplay(ReplayName);
 	
 	/* Check DemoNetDriver */
@@ -53,9 +55,16 @@ void URRReplaySubsystem::StartReplayWorld() const
 	GetWorld()->GetWorldSettings()->SetPauserPlayerState(nullptr);
 }
 
+void URRReplaySubsystem::StopReplayWorld(APlayerController* PlayerController) const
+{
+	GetWorld()->GetWorldSettings()->SetPauserPlayerState(PlayerController->PlayerState);
+}
+
 // ReSharper disable once CppMemberFunctionMayBeConst
 void URRReplaySubsystem::OnReplayPlaybackComplete(UWorld* World)
 {
+	bIsReplaying = false;
+	
 	UE_LOG(LogTemp, Warning, TEXT("===== Replay completed! ====="));
 	FNetworkReplayDelegates::OnReplayPlaybackComplete.RemoveAll(this);
 
@@ -80,7 +89,7 @@ void URRReplaySubsystem::CheckReplayPlayerController()
 {
 	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
 	{
-		GetWorld()->GetWorldSettings()->SetPauserPlayerState(PC->PlayerState);
+		StopReplayWorld(PC);
 		
 		if (ARRReplayPlayerController* ReplayPC = Cast<ARRReplayPlayerController>(PC))
 		{

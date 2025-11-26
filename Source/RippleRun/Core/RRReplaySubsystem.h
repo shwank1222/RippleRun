@@ -24,9 +24,14 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Replay")
 	void StartReplayWorld() const;
+	UFUNCTION(BlueprintCallable, Category = "Replay")
+	void StopReplayWorld(APlayerController* PlayerController) const;
 	
 	UPROPERTY(BlueprintAssignable, Category = "Replay")
 	FOnReplayCompleted OnReplayCompleted;
+	
+	UFUNCTION(BlueprintPure, Category = "Replay")
+	FORCEINLINE bool IsReplaying() const { return bIsReplaying; }
 	
 private:
 	AActor* GetReplayCamera() const;
@@ -41,4 +46,6 @@ private:
 	
 	FTimerHandle CheckDemoNetDriverTimerHandle;
 	FTimerHandle CheckReplayPlayerControllerTimerHandle;
+	
+	bool bIsReplaying = false;
 };

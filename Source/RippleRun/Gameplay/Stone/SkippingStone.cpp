@@ -99,6 +99,11 @@ void ASkippingStone::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
+    if (GetWorld()->IsPlayingReplay())
+    {
+        return;
+    }
+    
     TimeElapsed += DeltaTime;
 
     ForwardDistance =
@@ -111,6 +116,8 @@ void ASkippingStone::Tick(float DeltaTime)
 
     // Simple yaw spin
     AddActorLocalRotation(FRotator(0.f, SpinRate * DeltaTime, 0.f));
+    
+    ForceNetUpdate();
 }
 
 void ASkippingStone::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
