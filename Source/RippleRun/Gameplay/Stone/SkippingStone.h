@@ -29,6 +29,7 @@ public:
     ASkippingStone();
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 #pragma region Components
 public:
@@ -40,6 +41,7 @@ public:
 #pragma endregion
 
 #pragma region Setters & Getters
+public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE void SetThrowAngle(float NewAngle) { ThrowAngle = NewAngle; }
 
@@ -183,16 +185,20 @@ private:
     FVector ContactPoint;
 
     // Internal
+	UPROPERTY(Replicated)
 	int32 BounceCount = 0;
     int32 BounceFrameCounter = 0;
 
+	UPROPERTY(Replicated)
     float TimeElapsed = 0.f;
     float SunkElapsed = 0.f;
     
     FVector ThrowStartLocation;
     FVector ThrowDirection;
 
+	UPROPERTY(Replicated)
     float FinalDistance = 0.f;
+	UPROPERTY(Replicated)
     float ForwardDistance = 0.f;
 
     bool bHasThrown = false;
