@@ -22,18 +22,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Replay")
 	void PlayReplay();
 	
+	UFUNCTION(BlueprintCallable, Category = "Replay")
+	void StartReplayWorld() const;
+	
 	UPROPERTY(BlueprintAssignable, Category = "Replay")
 	FOnReplayCompleted OnReplayCompleted;
 	
 private:
+	AActor* GetReplayCamera() const;
+	
 	UFUNCTION()
 	void OnReplayPlaybackComplete(UWorld* World);
 	
 	UFUNCTION()
-	void ConnectReplayCamera();
-	
+	void CheckDemoNetDriver();
 	UFUNCTION()
-	void TestLog();
+	void CheckReplayPlayerController();
 	
-	FTimerHandle TestTimerHandle;
+	FTimerHandle CheckDemoNetDriverTimerHandle;
+	FTimerHandle CheckReplayPlayerControllerTimerHandle;
 };

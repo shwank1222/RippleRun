@@ -3,10 +3,10 @@
 
 #include "RRReplaySubsystem.h"
 
-#include "RRGameState.h"
-#include "Gameplay/Stone/SkippingStone.h"
+#include "Engine/DemoNetDriver.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/RRReplayPlayerController.h"
 
 static const FString ReplayName = TEXT("ReplayTest");
 
@@ -29,12 +29,12 @@ void URRReplaySubsystem::PlayReplay()
 	FNetworkReplayDelegates::OnReplayPlaybackComplete.AddUObject(this, &ThisClass::OnReplayPlaybackComplete);
 
 	GetGameInstance()->PlayReplay(ReplayName);
-
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ThisClass::ConnectReplayCamera, 0.5f, false);
+	
+	/* Check DemoNetDriver */
+	GetWorld()->GetTimerManager().SetTimer(CheckDemoNetDriverTimerHandle, this, &ThisClass::CheckDemoNetDriver, 0.1f, true);
 }
 
-void URRReplaySubsystem::ConnectReplayCamera()
+AActor* URRReplaySubsystem::GetReplayCamera() const
 {
 	TArray<AActor*> Actors;
 	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), AActor::StaticClass(), TEXT("ReplayCamera"), Actors);
@@ -42,28 +42,15 @@ void URRReplaySubsystem::ConnectReplayCamera()
 	if (Actors.Num() == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("===== No replay camera found! ====="));
-		return;
+		return nullptr;
 	}
-
-	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
-	{
-		PC->SetViewTargetWithBlend(Actors[0]);
-	}
-
-	GetWorld()->GetTimerManager().SetTimer(TestTimerHandle, this, &ThisClass::TestLog, 0.1f, true);
+	
+	return Actors[0];
 }
 
-void URRReplaySubsystem::TestLog()
+void URRReplaySubsystem::StartReplayWorld() const
 {
-	UE_LOG(LogTemp, Warning, TEXT("===== Test Log! ====="));
-
-	if (ARRGameState* GS = GetWorld()->GetGameState<ARRGameState>())
-	{
-		if (IsValid(GS->ReplayTargetStone))
-		{
-			// UE_LOG(LogTemp, Warning, TEXT("===== Test Value: %.2f ====="), GS->ReplayTargetStone->TestValue);
-		}
-	}
+	GetWorld()->GetWorldSettings()->SetPauserPlayerState(nullptr);
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
@@ -73,6 +60,41 @@ void URRReplaySubsystem::OnReplayPlaybackComplete(UWorld* World)
 	FNetworkReplayDelegates::OnReplayPlaybackComplete.RemoveAll(this);
 
 	OnReplayCompleted.Broadcast();
+}
 
-	GetWorld()->GetTimerManager().ClearTimer(TestTimerHandle);
+void URRReplaySubsystem::CheckDemoNetDriver()
+{
+	if (UDemoNetDriver* DemoDriver = GetWorld()->GetDemoNetDriver())
+	{
+		if (DemoDriver->IsPlaying())
+		{
+			GetWorld()->GetTimerManager().ClearTimer(CheckDemoNetDriverTimerHandle);
+			
+			/* Check ReplayPlayerController */
+			GetWorld()->GetTimerManager().SetTimer(CheckReplayPlayerControllerTimerHandle, this, &ThisClass::CheckReplayPlayerController, 0.1f, true);
+		}
+	}
+}
+
+void URRReplaySubsystem::CheckReplayPlayerController()
+{
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		GetWorld()->GetWorldSettings()->SetPauserPlayerState(PC->PlayerState);
+		
+		if (ARRReplayPlayerController* ReplayPC = Cast<ARRReplayPlayerController>(PC))
+		{
+			AActor* ReplayCamera = GetReplayCamera();
+			
+			if (!IsValid(ReplayCamera))
+			{
+				return;
+			}
+			
+			ReplayPC->SetViewTarget(ReplayCamera);
+			ReplayPC->ShowReplayWidget();
+			
+			GetWorld()->GetTimerManager().ClearTimer(CheckReplayPlayerControllerTimerHandle);
+		}
+	}
 }
