@@ -17,6 +17,27 @@ enum class EStoneState : uint8
     Sunk
 };
 
+UENUM(BlueprintType)
+enum class EFluidType : uint8
+{
+    Air,
+    Water
+};
+
+namespace
+{
+    bool IsFiniteVector(const FVector& V)
+    {
+        return FMath::IsFinite(V.X) && FMath::IsFinite(V.Y) && FMath::IsFinite(V.Z);
+    }
+
+    float SafePositive(float Value, float Default = 1.0f)
+    {
+        return (Value > KINDA_SMALL_NUMBER) ? Value : Default;
+    }
+}
+
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStoneFinished, ASkippingStone*, Stone);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStoneBounced, ASkippingStone*, Stone, int32, Count);
 
@@ -56,7 +77,6 @@ public:
     void SetRadius(float NewRadius);
 	UFUNCTION(BlueprintCallable)
 	void SetThickness(float NewThickness);
-
     UFUNCTION(BlueprintCallable)
     void SetTilt(float NewPitch, float NewRoll);
 
@@ -97,10 +117,38 @@ protected:
 
     // Physical
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
+    float Mass = 0.15f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
+    float Radius = 0.03f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
+    float Thickness = 0.01f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
 	float BaseRadius = 5.f; // Standard mesh radius
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
 	float BaseThickness = 2.f; // Standard mesh thickness
+
+    UPROPERTY(EditAnywhere, Category = "Stone|Physic")
+    float AirDensity = 0.0012f; 
+    UPROPERTY(EditAnywhere, Category = "Stone|Physic")
+    float WaterDensity = 0.0010f;
+
+    UPROPERTY(EditAnywhere, Category = "Stone|Physic")
+    float MinGlideSpeed = 300.f;  // 적당히 조절 가능
+    UPROPERTY(EditAnywhere, Category = "Stone|Physic")
+    float MinGlideSpin = 3.f;
+    UPROPERTY(EditAnywhere, Category = "Stone|Physic")
+    float GlideThreshold = 5.f;
+    UPROPERTY(EditAnywhere, Category = "Stone|Physic")
+    float GlideMinVz = 20.f;
+
+    UPROPERTY(EditAnywhere, Category = "Stone|Physic")
+    float DragCoeffAir = 0.5f;
+    UPROPERTY(EditAnywhere, Category = "Stone|Physic")
+    float DragCoeffWater = 1.0f;
+    UPROPERTY(EditAnywhere, Category = "Stone|Physic")
+    float LiftCoeffMagnus = 0.2f;
 
     // Spin
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Spin")
@@ -129,17 +177,13 @@ protected:
 
 	// Finish conditions
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Finish")
-    float EndSpeedThreshold = 70.f;     
+    float EndSpeedThreshold = 100.f;     
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Finish")
     float EndSinkDelay = 1.0f;
 
 
 private:
-    float Mass = 0.15f;
-    float Radius = 0.03f;
-    float Thickness = 0.01f;
-
 	float TiltPitch = 0.f;
 	float TiltRoll = 0.f;
 
@@ -154,14 +198,19 @@ public:
 
 private:
     void ApplyPhysics(float DeltaTime);
+
     void TickAirborne(float DeltaTime);
     void TickBouncing(float DeltaTime);
     void TickGlide(float DeltaTime);
+	void TickSunk(float DeltaTime);
+    void UpdateTilt(float DeltaTime);
 
-    bool ShouldBounce() const;
+	FVector ComputeDragForce(EFluidType Fluid) const;
+    FVector ComputeMagnusLiftForce() const;
 
     float ComputeIncidenceAngle() const;
-    float ComputeLift() const;
+
+    bool ShouldBounce() const;
 
     void SetStoneState(EStoneState NewState);
 
@@ -171,6 +220,9 @@ private:
 public:
 	UFUNCTION(BlueprintCallable, Category = "Stone|Utility")
     void MakeRandomStats();
+
+private:
+    float GetArea() const;
 
 #pragma region Runtime Variables
 private:

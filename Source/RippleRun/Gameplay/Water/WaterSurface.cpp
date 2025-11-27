@@ -45,7 +45,7 @@ void AWaterSurface::HandleStoneOverlap(
     ASkippingStone* Stone = Cast<ASkippingStone>(OtherActor);
     if (Stone)
     {
-        // 물 접촉을 Stone에게 전달
+		UE_LOG(LogTemp, Log, TEXT("Water Surface: Stone Overlapped"));
         Stone->HandleWaterContact(this, SweepResult.ImpactPoint);
 
         if (SplashEffect)
