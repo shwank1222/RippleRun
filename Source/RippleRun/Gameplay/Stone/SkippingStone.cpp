@@ -2,6 +2,7 @@
 #include "Gameplay/Water/WaterSurface.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ArrowComponent.h"
+#include "Net/UnrealNetwork.h"
 
 ASkippingStone::ASkippingStone()
 {
@@ -111,6 +112,11 @@ void ASkippingStone::Tick(float DeltaTime)
 
     if (!bHasThrown) return;
 
+    if (GetWorld()->IsPlayingReplay())
+    {
+        return;
+    }
+    
     TimeElapsed += DeltaTime;
 
     ForwardDistance =
@@ -123,6 +129,18 @@ void ASkippingStone::Tick(float DeltaTime)
 
     // Simple yaw spin
     AddActorLocalRotation(FRotator(0.f, SpinRate * DeltaTime, 0.f));
+    
+    ForceNetUpdate();
+}
+
+void ASkippingStone::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    
+    DOREPLIFETIME(ASkippingStone, BounceCount);
+    DOREPLIFETIME(ASkippingStone, TimeElapsed);
+    DOREPLIFETIME(ASkippingStone, FinalDistance);
+    DOREPLIFETIME(ASkippingStone, ForwardDistance);
 }
 
 #pragma region Physics
