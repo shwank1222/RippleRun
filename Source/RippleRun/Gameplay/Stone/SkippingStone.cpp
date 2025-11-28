@@ -250,14 +250,13 @@ void ASkippingStone::TickBouncing(float DeltaTime)
 
     FVector Reflected = Velocity - (1.f + Restitution) * Vn * Normal;
 
-    // 수면과 접촉하며 수평 속도도 약간 줄어듦 (물 저항)
     const float TangentialDamping = 0.9f;
     const FVector VnVec = FVector::DotProduct(Reflected, Normal) * Normal;
     const FVector VtVec = Reflected - VnVec;
 
     Reflected = VtVec * TangentialDamping + VnVec;
 
-    // 리프트(마그누스) 보정
+    // Magnus Lift 
     const FVector LiftForce = ComputeMagnusLiftForce();
     FVector LiftAccel = LiftForce / Mass;
 
@@ -278,6 +277,9 @@ void ASkippingStone::TickBouncing(float DeltaTime)
 
     Velocity = Reflected;
     SpinRate *= SpinDamping;
+
+    float CurveAngle = TiltRoll * CurveStrength;
+    Velocity = Velocity.RotateAngleAxis(CurveAngle, FVector::UpVector);
 
     BounceFrameCounter--;
 

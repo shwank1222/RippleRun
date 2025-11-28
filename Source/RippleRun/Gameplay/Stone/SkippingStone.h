@@ -175,6 +175,8 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Aerodynamics")
     float LiftScale = 0.0005f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Curve")
+	float CurveStrength = 0.15f;
 
     // Spin Properties
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Spin")
