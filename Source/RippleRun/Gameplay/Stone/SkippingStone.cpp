@@ -13,7 +13,7 @@ ASkippingStone::ASkippingStone()
     StoneMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StoneMeshComp"));
     StoneMeshComp->SetupAttachment(RootComponent);
     StoneMeshComp->SetCollisionProfileName("OverlapAll");
-    StoneMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    StoneMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
     ArrowComp = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComp"));
     ArrowComp->SetupAttachment(RootComponent);
@@ -30,10 +30,10 @@ void ASkippingStone::BeginPlay()
 
 void ASkippingStone::MakeRandomStats()
 {
-    float NewRadius = FMath::FRandRange(3.f, 10.f);
+    float NewRadius = FMath::FRandRange(0.03f, 0.1f);
     SetRadius(NewRadius);
 
-    float NewThickness = FMath::FRandRange(1.f, 3.5f);
+    float NewThickness = FMath::FRandRange(0.01f, 0.035f);
     SetThickness(NewThickness);
 
 	float NewMass = FMath::FRandRange(0.05f, 0.3f);
@@ -46,7 +46,7 @@ void ASkippingStone::SetRadius(float NewRadius)
 
     FVector Scale = StoneMeshComp->GetRelativeScale3D();
 
-    float RadiusScale = Radius / BaseRadius;
+    float RadiusScale = Radius / BaseRadius * 100.f; // Convert m to cm
 
     Scale.X = RadiusScale;
     Scale.Y = RadiusScale;
@@ -60,7 +60,7 @@ void ASkippingStone::SetThickness(float NewThickness)
 
     FVector Scale = StoneMeshComp->GetRelativeScale3D();
 
-    float ThicknessScale = Thickness / BaseThickness;
+	float ThicknessScale = Thickness / BaseThickness * 100.f; // Convert m to cm
 
     Scale.Z = ThicknessScale;
 
@@ -116,6 +116,8 @@ void ASkippingStone::Tick(float DeltaTime)
     {
         return;
     }
+
+    PreviousLocation = GetActorLocation();
     
     TimeElapsed += DeltaTime;
 
@@ -216,6 +218,19 @@ void ASkippingStone::TickAirborne(float DeltaTime)
         SetStoneState(EStoneState::Sunk); // 안전하게 종료
         return;
     }
+
+    if (Velocity.Z < 0.f&& LastWater!=nullptr) 
+    {
+        float WaterZ = LastWater ? LastWater->GetActorLocation().Z : ContactPoint.Z;
+
+        if (GetActorLocation().Z <= WaterZ + 5.f)   // +5 ~ +10cm 정도가 안정적
+        {
+            SetStoneState(EStoneState::Sunk);
+            FinalDistance = ForwardDistance;
+            return;
+        }
+    }
+
 }
 
 
@@ -321,14 +336,12 @@ void ASkippingStone::TickGlide(float DeltaTime)
     {
         SetStoneState(EStoneState::Sunk);
         FinalDistance = ForwardDistance;
-        UE_LOG(LogTemp, Log, TEXT("[Glide] Speed/Spin too low -> Sunk"));
         return;
     }
 
     if (Velocity.Z > GlideMinVz && GetActorLocation().Z >= ContactPoint.Z + GlideThreshold)
     {
         SetStoneState(EStoneState::Airborne);
-        UE_LOG(LogTemp, Log, TEXT("[Glide] Lifted up -> Airborne"));
         return;
     }
 }
@@ -483,8 +496,6 @@ bool ASkippingStone::ShouldBounce() const
     // "임계 각도"를 속도/질량에 따라 조정 가능 (예: 빠를수록 조금 더 커도 튄다)
     float DynamicCriticalAngle = CriticalBounceAngle + 5.f * FMath::Loge(Speed / 500.f + 1.f);
 
-    const float MinSpeed = 500.f;
-
     float PitchPenalty = 0.f;
     float RollPenalty = 0.f;
 
@@ -498,8 +509,8 @@ bool ASkippingStone::ShouldBounce() const
 
     bool bBounce =
         EffectiveAngle < DynamicCriticalAngle &&
-        Speed > MinSpeed &&
-        SpinRate > 5.f &&
+        Speed > MinBounceSpeed &&
+        SpinRate > MinBounceSpin &&
         Velocity.Z > -1000.f;
 
     UE_LOG(LogTemp, Log,
@@ -522,12 +533,36 @@ float ASkippingStone::GetArea() const
 void ASkippingStone::HandleWaterContact(AWaterSurface* Water, const FVector& HitPoint)
 {
     LastWater = Water;
-    ContactPoint = HitPoint;
 
-    if (State == EStoneState::Airborne)
+    FVector Prev = PreviousLocation;
+    FVector Curr = GetActorLocation();
+
+    const float WaterZ = Water->GetActorLocation().Z;
+
+    float Alpha = (WaterZ - Prev.Z) / (Curr.Z - Prev.Z);
+    Alpha = FMath::Clamp(Alpha, 0.f, 1.f);
+
+    FVector Hit = Prev + (Curr - Prev) * Alpha;
+    Hit.Z = WaterZ;
+
+    Water->GenerateWave(Hit, SpinRate);
+
+    ContactPoint = Hit;
+
+	if (State == EStoneState::Airborne)
     {
         SetStoneState(EStoneState::WaterContact);
     }
+}
+
+void ASkippingStone::ForceEndSkipping()
+{
+	Velocity = FVector::ZeroVector;
+	SetActorTickEnabled(false);
+
+    FinalDistance = ForwardDistance;
+
+    OnStoneFinished.Broadcast(this);
 }
 
 #pragma endregion

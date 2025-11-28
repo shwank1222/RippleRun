@@ -3,34 +3,39 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 AWaterSurface::AWaterSurface()
 {
     PrimaryActorTick.bCanEverTick = false;
 
-    // === WaterMesh를 Root로 설정 ===
     WaterMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WaterMesh"));
     RootComponent = WaterMesh;
 
-    WaterMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    WaterMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    WaterMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
     WaterMesh->SetCastShadow(false);
 
-    // === Collision은 Mesh의 자식으로 배치 ===
-    WaterCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("WaterCollision"));
-    WaterCollision->SetupAttachment(WaterMesh);
-    WaterCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-    WaterCollision->SetCollisionObjectType(ECC_WorldStatic);
-    WaterCollision->SetCollisionResponseToAllChannels(ECR_Overlap);
-
-    // === 오버랩 이벤트 ===
-    WaterCollision->OnComponentBeginOverlap.AddDynamic(
+    WaterMesh->OnComponentBeginOverlap.AddDynamic(
         this, &AWaterSurface::HandleStoneOverlap
     );
+
+    KillZone = CreateDefaultSubobject<UBoxComponent>(TEXT("KillZone"));
+    KillZone->SetupAttachment(WaterMesh);
+
+	//Set Z to be below water surface
+	KillZone->SetRelativeLocation(FVector(0.f, 0.f, -500.f));
+
+    KillZone->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    KillZone->SetCollisionResponseToAllChannels(ECR_Overlap);
+    KillZone->SetGenerateOverlapEvents(true);
+    KillZone->OnComponentBeginOverlap.AddDynamic(this, &AWaterSurface::HandleKillZoneOverlap);
 }
 
 void AWaterSurface::BeginPlay()
 {
-    Super::BeginPlay();
+
 }
 
 void AWaterSurface::HandleStoneOverlap(
@@ -62,5 +67,21 @@ void AWaterSurface::HandleStoneOverlap(
 
 void AWaterSurface::GenerateWave(const FVector& HitLocation, float ImpactStrength)
 {
-    // TODO: 나중에 실제 물결 시뮬레이션을 구현할 예정
+
+}
+
+void AWaterSurface::HandleKillZoneOverlap(
+    UPrimitiveComponent* OverlappedComp,
+    AActor* OtherActor,
+    UPrimitiveComponent* OtherComp,
+    int32 OtherBodyIndex,
+    bool bFromSweep,
+    const FHitResult& SweepResult
+)
+{
+    if (ASkippingStone* Stone = Cast<ASkippingStone>(OtherActor))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("KillZone: Stone forced end"));
+        Stone->ForceEndSkipping(); // 새 함수 하나 만들기
+    }
 }
