@@ -15,11 +15,10 @@ AWaterSurface::AWaterSurface()
 
     WaterMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     WaterMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
+	WaterMesh->SetGenerateOverlapEvents(false);
     WaterMesh->SetCastShadow(false);
 
-    WaterMesh->OnComponentBeginOverlap.AddDynamic(
-        this, &AWaterSurface::HandleStoneOverlap
-    );
+    WaterMesh->OnComponentBeginOverlap.AddDynamic(this, &AWaterSurface::HandleStoneOverlap);
 
     KillZone = CreateDefaultSubobject<UBoxComponent>(TEXT("KillZone"));
     KillZone->SetupAttachment(WaterMesh);
@@ -29,7 +28,7 @@ AWaterSurface::AWaterSurface()
 
     KillZone->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     KillZone->SetCollisionResponseToAllChannels(ECR_Overlap);
-    KillZone->SetGenerateOverlapEvents(true);
+    KillZone->SetGenerateOverlapEvents(false);
     KillZone->OnComponentBeginOverlap.AddDynamic(this, &AWaterSurface::HandleKillZoneOverlap);
 }
 
@@ -53,16 +52,39 @@ void AWaterSurface::HandleStoneOverlap(
 		UE_LOG(LogTemp, Log, TEXT("Water Surface: Stone Overlapped"));
         Stone->HandleWaterContact(this, SweepResult.ImpactPoint);
 
+        const FVector Hit = Stone->GetContactPoint();
+
         if (SplashEffect)
         {
             UGameplayStatics::SpawnEmitterAtLocation(
                 GetWorld(),
                 SplashEffect,
-                SweepResult.ImpactPoint,
-                FRotator::ZeroRotator
+                Hit
             );
         }
+
+        if (SplashSound)
+        {
+			float BounceCount = Stone->GetBounceCount();
+            float Strength = WaveStrength * FMath::Pow(0.8f, BounceCount);
+
+            UGameplayStatics::PlaySoundAtLocation(
+                GetWorld(),
+                SplashSound,
+                Hit,
+                Strength
+            );
+
+
+        }
+
     }
+}
+
+void AWaterSurface::SetOverlapEnabled(bool bEnabled)
+{
+	WaterMesh->SetGenerateOverlapEvents(bEnabled);
+	KillZone->SetGenerateOverlapEvents(bEnabled);
 }
 
 void AWaterSurface::GenerateWave(const FVector& HitLocation, float ImpactStrength)

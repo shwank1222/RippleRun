@@ -106,14 +106,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stone|Runtime")
 	FORCEINLINE float GetFinalDistance() const { return FinalDistance; }
 
+    UFUNCTION(BlueprintCallable, Category = "Stone|Runtime")
+	FORCEINLINE float GetSpinRate() const { return SpinRate; }
+
+    UFUNCTION(BlueprintCallable, Category = "Stone|Runtime")
+    FORCEINLINE FVector GetContactPoint() const { return ContactPoint; }
+
 #pragma endregion
 
 #pragma region Parameters
 protected:
 
-    // =========================
     // Throw Parameters
-    // =========================
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Throw")
     float InitialSpeed = 800.f;
 
@@ -121,9 +125,7 @@ protected:
     float ThrowAngle = 45.f;
 
 
-    // =========================
     // Physical Properties
-    // =========================
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
     float Mass = 0.15f;
 
@@ -259,6 +261,7 @@ private:
     float GetArea() const;
 
 #pragma region Runtime Variables
+
 private:
     FVector Velocity;
     FVector SpinAxis;
