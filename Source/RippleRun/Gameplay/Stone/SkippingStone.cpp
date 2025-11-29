@@ -13,7 +13,7 @@ ASkippingStone::ASkippingStone()
     StoneMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StoneMeshComp"));
     StoneMeshComp->SetupAttachment(RootComponent);
     StoneMeshComp->SetCollisionProfileName("OverlapAll");
-    StoneMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    StoneMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
     ArrowComp = CreateDefaultSubobject<UArrowComponent>(TEXT("ArrowComp"));
     ArrowComp->SetupAttachment(RootComponent);
@@ -33,7 +33,7 @@ void ASkippingStone::MakeRandomStats()
     float NewRadius = FMath::FRandRange(0.03f, 0.1f);
     SetRadius(NewRadius);
 
-    float NewThickness = FMath::FRandRange(0.1f, 0.35f);
+    float NewThickness = FMath::FRandRange(0.01f, 0.035f);
     SetThickness(NewThickness);
 
 	float NewMass = FMath::FRandRange(0.05f, 0.3f);
@@ -46,7 +46,7 @@ void ASkippingStone::SetRadius(float NewRadius)
 
     FVector Scale = StoneMeshComp->GetRelativeScale3D();
 
-    float RadiusScale = Radius / BaseRadius;
+    float RadiusScale = Radius / BaseRadius * 100.f; // Convert m to cm
 
     Scale.X = RadiusScale;
     Scale.Y = RadiusScale;
@@ -60,7 +60,7 @@ void ASkippingStone::SetThickness(float NewThickness)
 
     FVector Scale = StoneMeshComp->GetRelativeScale3D();
 
-    float ThicknessScale = Thickness / BaseThickness;
+	float ThicknessScale = Thickness / BaseThickness * 100.f; // Convert m to cm
 
     Scale.Z = ThicknessScale;
 
@@ -116,6 +116,8 @@ void ASkippingStone::Tick(float DeltaTime)
     {
         return;
     }
+
+    PreviousLocation = GetActorLocation();
     
     TimeElapsed += DeltaTime;
 
@@ -213,9 +215,22 @@ void ASkippingStone::TickAirborne(float DeltaTime)
     {
         UE_LOG(LogTemp, Error, TEXT("Velocity became non-finite in Airborne! V=%s"), *Velocity.ToString());
         Velocity = FVector::ZeroVector;
-        SetStoneState(EStoneState::Sunk); // ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½
+        SetStoneState(EStoneState::Sunk); // ¾ÈÀüÇÏ°Ô Á¾·á
         return;
     }
+
+    if (Velocity.Z < 0.f&& LastWater!=nullptr) 
+    {
+        float WaterZ = LastWater ? LastWater->GetActorLocation().Z : ContactPoint.Z;
+
+        if (GetActorLocation().Z <= WaterZ + 5.f)   // +5 ~ +10cm Á¤µµ°¡ ¾ÈÁ¤Àû
+        {
+            SetStoneState(EStoneState::Sunk);
+            FinalDistance = ForwardDistance;
+            return;
+        }
+    }
+
 }
 
 
@@ -229,20 +244,19 @@ void ASkippingStone::TickBouncing(float DeltaTime)
 
     const FVector Normal = FVector::UpVector;
 
-    // v' = v - (1+e)(vï¿½ï¿½n)n
+    // v' = v - (1+e)(v¡¤n)n
     float Vn = FVector::DotProduct(Velocity, Normal);
     float Restitution = EnergyRetention; // 0~1
 
     FVector Reflected = Velocity - (1.f + Restitution) * Vn * Normal;
 
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Óµï¿½ï¿½ï¿½ ï¿½à°£ ï¿½Ù¾ï¿½ï¿½ (ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
     const float TangentialDamping = 0.9f;
     const FVector VnVec = FVector::DotProduct(Reflected, Normal) * Normal;
     const FVector VtVec = Reflected - VnVec;
 
     Reflected = VtVec * TangentialDamping + VnVec;
 
-    // ï¿½ï¿½ï¿½ï¿½Æ®(ï¿½ï¿½ï¿½×´ï¿½ï¿½ï¿½) ï¿½ï¿½ï¿½ï¿½
+    // Magnus Lift 
     const FVector LiftForce = ComputeMagnusLiftForce();
     FVector LiftAccel = LiftForce / Mass;
 
@@ -264,6 +278,9 @@ void ASkippingStone::TickBouncing(float DeltaTime)
     Velocity = Reflected;
     SpinRate *= SpinDamping;
 
+    float CurveAngle = TiltRoll * CurveStrength;
+    Velocity = Velocity.RotateAngleAxis(CurveAngle, FVector::UpVector);
+
     BounceFrameCounter--;
 
     UpdateTilt(DeltaTime);
@@ -281,8 +298,8 @@ void ASkippingStone::TickGlide(float DeltaTime)
     FVector GravityForce = FVector(0.f, 0.f, -Mass * g);
     FVector LiftForce = ComputeMagnusLiftForce();
 
-    // ï¿½ï¿½ ï¿½ï¿½ ï¿½å·¡ï¿½ï¿½ (ï¿½ï¿½ï¿½âº¸ï¿½ï¿½ ï¿½Î¾ï¿½ Å­)
-    FVector WaterDragForce = ComputeDragForce(EFluidType::Water); // ï¿½ï¿½ï¿½ï¿½ ï¿½å·¡ï¿½×¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ + ï¿½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½
+    // ¹° À§ µå·¡±× (°ø±âº¸´Ù ÈÎ¾À Å­)
+    FVector WaterDragForce = ComputeDragForce(EFluidType::Water); // °ø±â µå·¡±×¿Í ºñ½ÁÇÑ ½Ä + °è¼ö¸¸ Å©°Ô
 
     FVector TotalForce = GravityForce + LiftForce + WaterDragForce;
 
@@ -302,7 +319,7 @@ void ASkippingStone::TickGlide(float DeltaTime)
 
     Velocity += Accel * DeltaTime;
 
-    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ó¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Yaw/ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ã¼­ ï¿½ï¿½ï¿½ï¿½È­ï¿½ï¿½Å°ï¿½ï¿½ ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½)
+    // ¼ö¸é À§¿¡ ¸Ó¹«¸£µµ·Ï ³Ê¹« ³»·Á°¡¸é Yaw/·Ñ Á¶±Ý ¹Ù²ã¼­ ¾ÈÁ¤È­½ÃÅ°´Â °Íµµ °¡´É (ÃßÈÄ)
 
     if (!IsFiniteVector(Velocity))
     {
@@ -312,7 +329,7 @@ void ASkippingStone::TickGlide(float DeltaTime)
         return;
     }
 
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    // ½ºÇÉÀº ¼­¼­È÷ °¨¼Ò
     SpinRate -= SpinRate * (AngularDrag * 0.5f) * DeltaTime;
 
     UpdateTilt(DeltaTime);
@@ -321,14 +338,12 @@ void ASkippingStone::TickGlide(float DeltaTime)
     {
         SetStoneState(EStoneState::Sunk);
         FinalDistance = ForwardDistance;
-        UE_LOG(LogTemp, Log, TEXT("[Glide] Speed/Spin too low -> Sunk"));
         return;
     }
 
     if (Velocity.Z > GlideMinVz && GetActorLocation().Z >= ContactPoint.Z + GlideThreshold)
     {
         SetStoneState(EStoneState::Airborne);
-        UE_LOG(LogTemp, Log, TEXT("[Glide] Lifted up -> Airborne"));
         return;
     }
 }
@@ -340,8 +355,8 @@ void ASkippingStone::TickSunk(float DeltaTime)
     FVector GravityForce = FVector(0.f, 0.f, -Mass * g);
     FVector DragForce = ComputeDragForce(EFluidType::Water);
 
-    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î·ï¿½ ï¿½Ù»ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ù°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
-    float SubmergedRatio = 1.0f; // ï¿½ï¿½ï¿½ß¿ï¿½ ï¿½ï¿½ï¿½ï¿½/ï¿½Î²ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    // ¾ÆÁÖ °£´ÜÇÑ ºÎ·Â ±Ù»ç: °ÅÀÇ ¿ÏÀüÈ÷ Àá°å´Ù°í º¸°í ºñÀ²·Î Á¶Á¤
+    float SubmergedRatio = 1.0f; // ³ªÁß¿¡ ³ôÀÌ/µÎ²²·Î °è»ê °¡´É
     float VolumeApprox = PI * Radius * Radius * Thickness; // cm^3
     float BuoyancyMagnitude = WaterDensity * g * VolumeApprox * SubmergedRatio;
     FVector BuoyancyForce(0.f, 0.f, BuoyancyMagnitude);
@@ -361,15 +376,15 @@ void ASkippingStone::TickSunk(float DeltaTime)
 
 void ASkippingStone::UpdateTilt(float DeltaTime)
 {
-    // ï¿½ï¿½ï¿½é¿¡ ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½Â¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    // ¼ö¸é¿¡ ´ê¾Æ ÀÖ´Â »óÅÂ¿¡¼­¸¸ º¸Á¤
     if (State != EStoneState::Bouncing && State != EStoneState::Glide)
         return;
 
-    // ï¿½ï¿½Ç¥: ï¿½à°£ nose-up (ï¿½ï¿½: 5ï¿½ï¿½), ï¿½ï¿½ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    // ¸ñÇ¥: ¾à°£ nose-up (¿¹: 5µµ), ·ÑÀº 0À¸·Î ¼­¼­È÷ º¹¿ø
     const float TargetPitch = 5.f;
     const float TargetRoll = 0.f;
 
-    const float PitchStiffness = 20.f; // Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    const float PitchStiffness = 20.f; // Å¬¼ö·Ï ºü¸£°Ô µû¶ó°¨
     const float RollStiffness = 18.f;
 
     TiltPitch = FMath::FInterpTo(TiltPitch, TargetPitch, DeltaTime, PitchStiffness);
@@ -422,10 +437,10 @@ FVector ASkippingStone::ComputeMagnusLiftForce() const
         return FVector::ZeroVector;
     }
 
-    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UpVector ï¿½ï¿½ï¿½ï¿½ï¿½Îµï¿½, ï¿½ï¿½ï¿½ß¿ï¿½ Tilt ï¿½Ý¿ï¿½ ï¿½ï¿½ï¿½ï¿½)
-    FVector Omega = SpinAxis * SpinRate;  // "È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½"
+    // ½ºÇÉ Ãà (Áö±ÝÀº UpVector °íÁ¤ÀÎµ¥, ³ªÁß¿¡ Tilt ¹Ý¿µ °¡´É)
+    FVector Omega = SpinAxis * SpinRate;  // "È¸Àü º¤ÅÍ"
 
-    // Magnus: FL ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ v
+    // Magnus: FL ¡ð ¥ø ¡¿ v
     FVector LiftDir = Omega ^ Velocity; // Cross product
 
     if (LiftDir.IsNearlyZero())
@@ -480,26 +495,24 @@ bool ASkippingStone::ShouldBounce() const
     float Angle = ComputeIncidenceAngle();
     float Speed = Velocity.Size();
 
-    // "ï¿½Ó°ï¿½ ï¿½ï¿½ï¿½ï¿½"ï¿½ï¿½ ï¿½Óµï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Ä¿ï¿½ï¿½ Æ¤ï¿½ï¿½)
+    // "ÀÓ°è °¢µµ"¸¦ ¼Óµµ/Áú·®¿¡ µû¶ó Á¶Á¤ °¡´É (¿¹: ºü¸¦¼ö·Ï Á¶±Ý ´õ Ä¿µµ Æ¤´Ù)
     float DynamicCriticalAngle = CriticalBounceAngle + 5.f * FMath::Loge(Speed / 500.f + 1.f);
-
-    const float MinSpeed = 500.f;
 
     float PitchPenalty = 0.f;
     float RollPenalty = 0.f;
 
-    // ï¿½ï¿½ï¿½ï¿½: Pitchï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È°Å³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å³ï¿½) ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Æ¼
+    // ¿¹½Ã: Pitch°¡ Å¬¼ö·Ï(¾ÕÀÌ ¸¹ÀÌ µé·È°Å³ª ¼÷¿©Á³°Å³ª) Á¶±Ý Æä³ÎÆ¼
     PitchPenalty = FMath::Abs(TiltPitch) * 0.3f;
 
-    // Rollï¿½ï¿½ ï¿½Â¿ï¿½ ï¿½ï¿½ï¿½ë°ªï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Æ¦)
+    // RollÀº ÁÂ¿ì Àý´ë°ª¸¸ »ç¿ë (±â¿ï¼ö·Ï ¾È Æ¦)
     RollPenalty = FMath::Abs(TiltRoll) * 0.5f;
 
     float EffectiveAngle = Angle + PitchPenalty + RollPenalty;
 
     bool bBounce =
         EffectiveAngle < DynamicCriticalAngle &&
-        Speed > MinSpeed &&
-        SpinRate > 5.f &&
+        Speed > MinBounceSpeed &&
+        SpinRate > MinBounceSpin &&
         Velocity.Z > -1000.f;
 
     UE_LOG(LogTemp, Log,
@@ -522,12 +535,36 @@ float ASkippingStone::GetArea() const
 void ASkippingStone::HandleWaterContact(AWaterSurface* Water, const FVector& HitPoint)
 {
     LastWater = Water;
-    ContactPoint = HitPoint;
 
-    if (State == EStoneState::Airborne)
+    FVector Prev = PreviousLocation;
+    FVector Curr = GetActorLocation();
+
+    const float WaterZ = Water->GetActorLocation().Z;
+
+    float Alpha = (WaterZ - Prev.Z) / (Curr.Z - Prev.Z);
+    Alpha = FMath::Clamp(Alpha, 0.f, 1.f);
+
+    FVector Hit = Prev + (Curr - Prev) * Alpha;
+    Hit.Z = WaterZ;
+
+    Water->GenerateWave(Hit, SpinRate);
+
+    ContactPoint = Hit;
+
+	if (State == EStoneState::Airborne)
     {
         SetStoneState(EStoneState::WaterContact);
     }
+}
+
+void ASkippingStone::ForceEndSkipping()
+{
+	Velocity = FVector::ZeroVector;
+	SetActorTickEnabled(false);
+
+    FinalDistance = ForwardDistance;
+
+    OnStoneFinished.Broadcast(this);
 }
 
 #pragma endregion

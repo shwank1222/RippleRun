@@ -5,6 +5,7 @@
 
 class UBoxComponent;
 class ASkippingStone;
+class UBoxComponent;
 
 UCLASS()
 class RIPPLERUN_API AWaterSurface : public AActor
@@ -23,18 +24,10 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Visual")
     UStaticMeshComponent* WaterMesh;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Collision")
-    UBoxComponent* WaterCollision;
-
 #pragma endregion
 
 #pragma region Parameters
 public:
-
-    // 물 저항 (글라이드, 접촉 시 감쇠에 사용)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Physics")
-    float Viscosity = 0.2f;
-
     // 스플래시 / 파동 세기
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Effect")
     float WaveStrength = 10.f;
@@ -43,15 +36,20 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Effect")
     UParticleSystem* SplashEffect;
 
+    UPROPERTY(VisibleAnywhere, Category = "Water|Collision")
+    UBoxComponent* KillZone;
+
 #pragma endregion
 
 #pragma region Functions
-public:
 
+public:
     UFUNCTION(BlueprintCallable)
     void GenerateWave(const FVector& HitLocation, float ImpactStrength);
 
-private:
+    
+protected:
+
     UFUNCTION()
     void HandleStoneOverlap(
         UPrimitiveComponent* OverlappedComp,
@@ -60,6 +58,25 @@ private:
         int32 OtherBodyIndex,
         bool bFromSweep,
         const FHitResult& SweepResult
+    );
+
+	UFUNCTION()
+    void HandleKillZoneOverlap(
+        UPrimitiveComponent* OverlappedComp, 
+        AActor* OtherActor, 
+        UPrimitiveComponent* OtherComp, 
+        int32 OtherBodyIndex, 
+        bool bFromSweep, 
+        const FHitResult& SweepResult);
+
+
+    UFUNCTION(BlueprintImplementableEvent, Category = "Water|Wave")
+    void DrawRippleToRT(
+        UTextureRenderTarget2D* Target,
+        UMaterialInterface* WriterMaterial,
+        const FVector2D& HitUV,
+        float Intensity,
+        float Radius
     );
 
 #pragma endregion
