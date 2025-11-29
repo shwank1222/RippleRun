@@ -130,7 +130,7 @@ void ASkippingStone::Tick(float DeltaTime)
     SetActorLocation(GetActorLocation() + Velocity * DeltaTime);
 
     // Simple yaw spin
-    AddActorLocalRotation(FRotator(0.f, SpinRate * DeltaTime, 0.f));
+    AddActorLocalRotation(FRotator(0.f, 100*SpinRate * DeltaTime, 0.f));
     
     ForceNetUpdate();
 }
@@ -215,7 +215,7 @@ void ASkippingStone::TickAirborne(float DeltaTime)
     {
         UE_LOG(LogTemp, Error, TEXT("Velocity became non-finite in Airborne! V=%s"), *Velocity.ToString());
         Velocity = FVector::ZeroVector;
-        SetStoneState(EStoneState::Sunk); // 안전하게 종료
+        SetStoneState(EStoneState::Sunk);
         return;
     }
 
@@ -223,7 +223,7 @@ void ASkippingStone::TickAirborne(float DeltaTime)
     {
         float WaterZ = LastWater ? LastWater->GetActorLocation().Z : ContactPoint.Z;
 
-        if (GetActorLocation().Z <= WaterZ + 5.f)   // +5 ~ +10cm 정도가 안정적
+        if (GetActorLocation().Z <= WaterZ + 5.f)
         {
             SetStoneState(EStoneState::Sunk);
             FinalDistance = ForwardDistance;
@@ -511,7 +511,7 @@ bool ASkippingStone::ShouldBounce() const
     bool bBounce =
         EffectiveAngle < DynamicCriticalAngle &&
         Speed > MinBounceSpeed &&
-        SpinRate > MinBounceSpin &&
+        abs(SpinRate) > MinBounceSpin &&
         Velocity.Z > -1000.f;
 
     UE_LOG(LogTemp, Log,

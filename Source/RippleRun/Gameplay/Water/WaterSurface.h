@@ -6,6 +6,7 @@
 class UBoxComponent;
 class ASkippingStone;
 class UBoxComponent;
+class UNiagaraSystem;
 
 UCLASS()
 class RIPPLERUN_API AWaterSurface : public AActor
@@ -33,7 +34,7 @@ protected:
 	USoundBase* SplashSound;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Effect")
-    UParticleSystem* SplashEffect;
+    UNiagaraSystem* SplashNiagaraSystem;
 
 #pragma endregion
 

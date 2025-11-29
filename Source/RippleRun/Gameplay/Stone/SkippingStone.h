@@ -218,8 +218,8 @@ protected:
 
 
 private:
-	float TiltPitch = 0.f;
-	float TiltRoll = 0.f;
+    float TiltPitch = 0.f;
+    float TiltRoll = 0.f;
 
 #pragma endregion
 

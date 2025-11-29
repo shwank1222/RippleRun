@@ -5,6 +5,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 
 AWaterSurface::AWaterSurface()
 {
@@ -54,13 +57,19 @@ void AWaterSurface::HandleStoneOverlap(
 
         const FVector Hit = Stone->GetContactPoint();
 
-        if (SplashEffect)
+        if (SplashNiagaraSystem)
         {
-            UGameplayStatics::SpawnEmitterAtLocation(
-                GetWorld(),
-                SplashEffect,
-                Hit
-            );
+            UNiagaraComponent* NiagaraComp =
+                UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                    GetWorld(),
+                    SplashNiagaraSystem,
+                    Hit,
+                    FRotator::ZeroRotator
+                );
+
+            if (!NiagaraComp) return;
+
+            //NiagaraComp->SetFloatParameter(TEXT("ImpactStrength"), ImpactStrength);
         }
 
         if (SplashSound)
@@ -104,6 +113,6 @@ void AWaterSurface::HandleKillZoneOverlap(
     if (ASkippingStone* Stone = Cast<ASkippingStone>(OtherActor))
     {
         UE_LOG(LogTemp, Warning, TEXT("KillZone: Stone forced end"));
-        Stone->ForceEndSkipping(); // �� �Լ� �ϳ� �����
+        Stone->ForceEndSkipping();
     }
 }
