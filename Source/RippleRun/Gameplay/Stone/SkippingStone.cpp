@@ -298,7 +298,6 @@ void ASkippingStone::TickGlide(float DeltaTime)
     FVector GravityForce = FVector(0.f, 0.f, -Mass * g);
     FVector LiftForce = ComputeMagnusLiftForce();
 
-    // 물 위 드래그 (공기보다 훨씬 큼)
     FVector WaterDragForce = ComputeDragForce(EFluidType::Water); // 공기 드래그와 비슷한 식 + 계수만 크게
 
     FVector TotalForce = GravityForce + LiftForce + WaterDragForce;
@@ -554,6 +553,7 @@ void ASkippingStone::HandleWaterContact(AWaterSurface* Water, const FVector& Hit
 	if (State == EStoneState::Airborne)
     {
         SetStoneState(EStoneState::WaterContact);
+
     }
 }
 

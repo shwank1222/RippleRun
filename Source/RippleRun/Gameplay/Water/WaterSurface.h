@@ -26,15 +26,24 @@ protected:
 
 #pragma endregion
 
-#pragma region Parameters
-public:
-    // 스플래시 / 파동 세기
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Effect")
-    float WaveStrength = 10.f;
+  
+#pragma region Water Effect
 
-    // 이펙트
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Water|Effect")
+	USoundBase* SplashSound;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Effect")
     UParticleSystem* SplashEffect;
+
+#pragma endregion
+
+
+#pragma region Parameters
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Effect")
+    float WaveStrength = 1.f;
+
 
     UPROPERTY(VisibleAnywhere, Category = "Water|Collision")
     UBoxComponent* KillZone;
@@ -44,6 +53,9 @@ public:
 #pragma region Functions
 
 public:
+    UFUNCTION(BlueprintCallable)
+	void SetOverlapEnabled(bool bEnabled);
+
     UFUNCTION(BlueprintCallable)
     void GenerateWave(const FVector& HitLocation, float ImpactStrength);
 
