@@ -15,7 +15,7 @@ AWaterSurface::AWaterSurface()
 
     WaterMesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     WaterMesh->SetCollisionResponseToAllChannels(ECR_Overlap);
-	WaterMesh->SetGenerateOverlapEvents(false);
+	WaterMesh->SetGenerateOverlapEvents(true);
     WaterMesh->SetCastShadow(false);
 
     WaterMesh->OnComponentBeginOverlap.AddDynamic(this, &AWaterSurface::HandleStoneOverlap);
@@ -28,7 +28,7 @@ AWaterSurface::AWaterSurface()
 
     KillZone->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
     KillZone->SetCollisionResponseToAllChannels(ECR_Overlap);
-    KillZone->SetGenerateOverlapEvents(false);
+    KillZone->SetGenerateOverlapEvents(true);
     KillZone->OnComponentBeginOverlap.AddDynamic(this, &AWaterSurface::HandleKillZoneOverlap);
 }
 
@@ -104,6 +104,6 @@ void AWaterSurface::HandleKillZoneOverlap(
     if (ASkippingStone* Stone = Cast<ASkippingStone>(OtherActor))
     {
         UE_LOG(LogTemp, Warning, TEXT("KillZone: Stone forced end"));
-        Stone->ForceEndSkipping(); // »õ ÇÔ¼ö ÇÏ³ª ¸¸µé±â
+        Stone->ForceEndSkipping(); // ï¿½ï¿½ ï¿½Ô¼ï¿½ ï¿½Ï³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
     }
 }
