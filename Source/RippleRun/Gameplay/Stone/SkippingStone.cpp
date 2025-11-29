@@ -333,7 +333,7 @@ void ASkippingStone::TickGlide(float DeltaTime)
 
     UpdateTilt(DeltaTime);
 
-    if (Velocity.Size() < MinGlideSpeed || SpinRate < MinGlideSpin)
+    if (Velocity.Size() < MinGlideSpeed || abs(SpinRate) < MinGlideSpin)
     {
         SetStoneState(EStoneState::Sunk);
         FinalDistance = ForwardDistance;
