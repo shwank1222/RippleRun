@@ -30,7 +30,7 @@ void ASkippingStone::BeginPlay()
 
 void ASkippingStone::MakeRandomStats()
 {
-    float NewRadius = FMath::FRandRange(0.03f, 0.1f);
+    float NewRadius = FMath::FRandRange(0.03f, 0.08f);
     float NewThickness = FMath::FRandRange(0.01f, 0.035f);
 
     SetRadius(NewRadius);
