@@ -25,10 +25,15 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Visual")
     UStaticMeshComponent* WaterMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Audio")
+	UAudioComponent* AmbientAudioComponent;
+
 #pragma endregion
 
   
 #pragma region Water Effect
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Water|Effect|Sound")
+	USoundBase* WaterAmbientSound;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Water|Effect|Sound")
 	USoundBase* SplashSound;

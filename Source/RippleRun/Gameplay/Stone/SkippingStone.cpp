@@ -31,13 +31,15 @@ void ASkippingStone::BeginPlay()
 void ASkippingStone::MakeRandomStats()
 {
     float NewRadius = FMath::FRandRange(0.03f, 0.1f);
-    SetRadius(NewRadius);
-
     float NewThickness = FMath::FRandRange(0.01f, 0.035f);
+
+    SetRadius(NewRadius);
     SetThickness(NewThickness);
 
-	float NewMass = FMath::FRandRange(0.05f, 0.3f);
-	SetMass(NewMass);
+    float Volume = PI * Radius * Radius * Thickness;
+    float NewMass = Density * Volume;
+
+    SetMass(NewMass);
 }
 
 void ASkippingStone::SetRadius(float NewRadius)
@@ -89,13 +91,19 @@ void ASkippingStone::ThrowStone()
     ThrowStartLocation = GetActorLocation();
     ThrowDirection = GetActorForwardVector().GetSafeNormal();
 
-	FRotator CurrnetRotation = StoneMeshComp->GetRelativeRotation();
-	TiltPitch = CurrnetRotation.Pitch;
-	TiltRoll = CurrnetRotation.Roll;
+    FRotator CurrentRotation = StoneMeshComp->GetRelativeRotation();
+    TiltPitch = CurrentRotation.Pitch;
+    TiltRoll = CurrentRotation.Roll;
 
+    // Throwing direction
     FRotator ThrowRot = GetActorRotation();
     ThrowRot.Pitch += ThrowAngle;
-    Velocity = ThrowRot.Vector() * InitialSpeed;
+    FVector Direction = ThrowRot.Vector().GetSafeNormal();
+
+    float Accel = ThrowForce / Mass *100.f;
+    float ImpulseTime = 0.02f;
+
+    Velocity = Direction * (Accel * ImpulseTime);
 
     SpinAxis = StoneMeshComp->GetUpVector().GetSafeNormal();
 
@@ -103,8 +111,12 @@ void ASkippingStone::ThrowStone()
     SetActorTickEnabled(true);
 
     bHasThrown = true;
-    UE_LOG(LogTemp, Log, TEXT("Stone Thrown"));
+
+    UE_LOG(LogTemp, Log,
+        TEXT("Stone Thrown | Force=%.1f | Mass=%.3f | InitV=%.1f cm/s"),
+        ThrowForce, Mass, Velocity.Size());
 }
+
 
 void ASkippingStone::Tick(float DeltaTime)
 {
@@ -122,7 +134,7 @@ void ASkippingStone::Tick(float DeltaTime)
     TimeElapsed += DeltaTime;
 
     ForwardDistance =
-        FVector::DotProduct(GetActorLocation() - ThrowStartLocation, ThrowDirection);
+        FVector::DotProduct(GetActorLocation() - ThrowStartLocation, ThrowDirection)/100;
 
     ApplyPhysics(DeltaTime);
 
