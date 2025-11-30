@@ -8,6 +8,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
+#include "Components/AudioComponent.h"
 
 AWaterSurface::AWaterSurface()
 {
@@ -37,6 +38,14 @@ AWaterSurface::AWaterSurface()
 
 void AWaterSurface::BeginPlay()
 {
+    if (WaterAmbientSound)
+    {
+		AmbientAudioComponent = NewObject<UAudioComponent>(this);
+        AmbientAudioComponent->RegisterComponent();
+        AmbientAudioComponent->SetSound(WaterAmbientSound);
+        AmbientAudioComponent->FadeIn(2.0f, 1.0f, 0.0f);
+        AmbientAudioComponent->Play();
+    }
 
 }
 

@@ -71,7 +71,7 @@ public:
 	FORCEINLINE void SetSpinRate(float NewSpinRate) { SpinRate = NewSpinRate; }
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE void SetInitialSpeed(float NewSpeed) { InitialSpeed = NewSpeed; }
+	FORCEINLINE void SetThrowForce(float NewForce) { ThrowForce = NewForce; }
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE void SetMass(float NewMass) { Mass = NewMass; }
@@ -116,14 +116,12 @@ public:
 
 #pragma region Parameters
 protected:
-
     // Throw Parameters
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Throw")
-    float InitialSpeed = 800.f;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Throw")
     float ThrowAngle = 45.f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Throw")
+    float ThrowForce = 1200.f;
 
     // Physical Properties
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
@@ -134,6 +132,9 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
     float Thickness = 0.01f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
+    float Density = 1500.f;
 
     // 기준 메쉬 사이즈 (스케일링용)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stone|Physic")
