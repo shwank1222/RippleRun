@@ -68,9 +68,26 @@ void AWaterSurface::HandleStoneOverlap(
                 );
 
             if (!NiagaraComp) return;
-
-            //NiagaraComp->SetFloatParameter(TEXT("ImpactStrength"), ImpactStrength);
         }
+
+        if (RippleNiagaraSystem)
+        {
+			FVector SpawnLocation = Hit + FVector(0.f, 0.f, 20.f);
+
+            UNiagaraComponent* NiagaraComp =
+                UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+                    GetWorld(),
+                    RippleNiagaraSystem,
+                    SpawnLocation,
+                    FRotator::ZeroRotator,
+                    FVector(RippleScale)
+                );
+
+            if (!NiagaraComp) return;
+
+			// check if ripple spawned
+			UE_LOG(LogTemp, Log, TEXT("Water Surface: Ripple Spawned at %s"), *SpawnLocation.ToString());
+		}
 
         if (SplashSound)
         {

@@ -30,11 +30,17 @@ protected:
   
 #pragma region Water Effect
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Water|Effect")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Water|Effect|Sound")
 	USoundBase* SplashSound;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Effect")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Effect|Splash")
     UNiagaraSystem* SplashNiagaraSystem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Water|Effect|Ripple")
+	UNiagaraSystem* RippleNiagaraSystem;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Water|Effect|Ripple")
+	float RippleScale = 1.f;
 
 #pragma endregion
 
