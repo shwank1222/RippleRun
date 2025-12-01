@@ -32,12 +32,8 @@ Download the release ZIP, unzip the folder, and run:
 **Grabbit** — Game Design, Stone Physics, VFX Programming  
 **Ttingpan** — Framework, UI Programming  
 
-## 🧰 Assets Used
+## 📄 License
+This project’s source code is released under the MIT License.  
+See the [LICENSE](LICENSE) file for details.
 
-This project makes use of the following Unreal Engine Marketplace assets:
-
-- **Stylized Vol Clouds**  
-- **Stylized PBR Nature**
-
-All rights for these assets belong to their respective creators.  
-They were used only for environment, lighting, and visual enhancement during development.
+Note: Game assets are rights-reserved and are not included in this repository.
