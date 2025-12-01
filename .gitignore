@@ -88,3 +88,16 @@ Plugins/**/Intermediate/*
 *.dwo
 # Cache files for the editor to use
 DerivedDataCache/*
+
+############################
+# Ignore content by default
+############################
+Content/**
+
+# Allow only these
+!Content/_RippleRun/**
+!Content/Splash/**
+
+# Allow folders themselves
+!Content/_RippleRun/
+!Content/Splash/
