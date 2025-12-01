@@ -32,6 +32,12 @@ Download the release ZIP, unzip the folder, and run:
 **Grabbit** — Game Design, Stone Physics, VFX Programming  
 **Ttingpan** — Framework, UI Programming  
 
-## 📜 License
-This project is released for Game Off 2025.  
-Please refer to individual assets’ licenses if you modify or reuse the code.
+## 🧰 Assets Used
+
+This project makes use of the following Unreal Engine Marketplace assets:
+
+- **Stylized Vol Clouds**  
+- **Stylized PBR Nature**
+
+All rights for these assets belong to their respective creators.  
+They were used only for environment, lighting, and visual enhancement during development.
