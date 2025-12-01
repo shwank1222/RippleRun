@@ -101,7 +101,7 @@ void ASkippingStone::ThrowStone()
     FVector Direction = ThrowRot.Vector().GetSafeNormal();
 
     float Accel = ThrowForce / Mass *100.f;
-    float ImpulseTime = 0.02f;
+    float ImpulseTime = 0.01f;
 
     Velocity = Direction * (Accel * ImpulseTime);
 
@@ -256,7 +256,7 @@ void ASkippingStone::TickBouncing(float DeltaTime)
 
     const FVector Normal = FVector::UpVector;
 
-    // v' = v - (1+e)(v¡¤n)n
+    // v' = v - (1+e)(vï¿½ï¿½n)n
     float Vn = FVector::DotProduct(Velocity, Normal);
     float Restitution = EnergyRetention; // 0~1
 
@@ -310,7 +310,7 @@ void ASkippingStone::TickGlide(float DeltaTime)
     FVector GravityForce = FVector(0.f, 0.f, -Mass * g);
     FVector LiftForce = ComputeMagnusLiftForce();
 
-    FVector WaterDragForce = ComputeDragForce(EFluidType::Water); // °ø±â µå·¡±×¿Í ºñ½ÁÇÑ ½Ä + °è¼ö¸¸ Å©°Ô
+    FVector WaterDragForce = ComputeDragForce(EFluidType::Water); // ï¿½ï¿½ï¿½ï¿½ ï¿½å·¡ï¿½×¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ + ï¿½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½
 
     FVector TotalForce = GravityForce + LiftForce + WaterDragForce;
 
@@ -330,7 +330,7 @@ void ASkippingStone::TickGlide(float DeltaTime)
 
     Velocity += Accel * DeltaTime;
 
-    // ¼ö¸é À§¿¡ ¸Ó¹«¸£µµ·Ï ³Ê¹« ³»·Á°¡¸é Yaw/·Ñ Á¶±Ý ¹Ù²ã¼­ ¾ÈÁ¤È­½ÃÅ°´Â °Íµµ °¡´É (ÃßÈÄ)
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ó¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Yaw/ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ã¼­ ï¿½ï¿½ï¿½ï¿½È­ï¿½ï¿½Å°ï¿½ï¿½ ï¿½Íµï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½)
 
     if (!IsFiniteVector(Velocity))
     {
@@ -340,7 +340,7 @@ void ASkippingStone::TickGlide(float DeltaTime)
         return;
     }
 
-    // ½ºÇÉÀº ¼­¼­È÷ °¨¼Ò
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     SpinRate -= SpinRate * (AngularDrag * 0.5f) * DeltaTime;
 
     UpdateTilt(DeltaTime);
@@ -366,8 +366,8 @@ void ASkippingStone::TickSunk(float DeltaTime)
     FVector GravityForce = FVector(0.f, 0.f, -Mass * g);
     FVector DragForce = ComputeDragForce(EFluidType::Water);
 
-    // ¾ÆÁÖ °£´ÜÇÑ ºÎ·Â ±Ù»ç: °ÅÀÇ ¿ÏÀüÈ÷ Àá°å´Ù°í º¸°í ºñÀ²·Î Á¶Á¤
-    float SubmergedRatio = 1.0f; // ³ªÁß¿¡ ³ôÀÌ/µÎ²²·Î °è»ê °¡´É
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î·ï¿½ ï¿½Ù»ï¿½: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ù°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    float SubmergedRatio = 1.0f; // ï¿½ï¿½ï¿½ß¿ï¿½ ï¿½ï¿½ï¿½ï¿½/ï¿½Î²ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     float VolumeApprox = PI * Radius * Radius * Thickness; // cm^3
     float BuoyancyMagnitude = WaterDensity * g * VolumeApprox * SubmergedRatio;
     FVector BuoyancyForce(0.f, 0.f, BuoyancyMagnitude);
@@ -387,15 +387,15 @@ void ASkippingStone::TickSunk(float DeltaTime)
 
 void ASkippingStone::UpdateTilt(float DeltaTime)
 {
-    // ¼ö¸é¿¡ ´ê¾Æ ÀÖ´Â »óÅÂ¿¡¼­¸¸ º¸Á¤
+    // ï¿½ï¿½ï¿½é¿¡ ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½Â¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if (State != EStoneState::Bouncing && State != EStoneState::Glide)
         return;
 
-    // ¸ñÇ¥: ¾à°£ nose-up (¿¹: 5µµ), ·ÑÀº 0À¸·Î ¼­¼­È÷ º¹¿ø
+    // ï¿½ï¿½Ç¥: ï¿½à°£ nose-up (ï¿½ï¿½: 5ï¿½ï¿½), ï¿½ï¿½ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     const float TargetPitch = 5.f;
     const float TargetRoll = 0.f;
 
-    const float PitchStiffness = 20.f; // Å¬¼ö·Ï ºü¸£°Ô µû¶ó°¨
+    const float PitchStiffness = 20.f; // Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     const float RollStiffness = 18.f;
 
     TiltPitch = FMath::FInterpTo(TiltPitch, TargetPitch, DeltaTime, PitchStiffness);
@@ -448,10 +448,10 @@ FVector ASkippingStone::ComputeMagnusLiftForce() const
         return FVector::ZeroVector;
     }
 
-    // ½ºÇÉ Ãà (Áö±ÝÀº UpVector °íÁ¤ÀÎµ¥, ³ªÁß¿¡ Tilt ¹Ý¿µ °¡´É)
-    FVector Omega = SpinAxis * SpinRate;  // "È¸Àü º¤ÅÍ"
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UpVector ï¿½ï¿½ï¿½ï¿½ï¿½Îµï¿½, ï¿½ï¿½ï¿½ß¿ï¿½ Tilt ï¿½Ý¿ï¿½ ï¿½ï¿½ï¿½ï¿½)
+    FVector Omega = SpinAxis * SpinRate;  // "È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½"
 
-    // Magnus: FL ¡ð ¥ø ¡¿ v
+    // Magnus: FL ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ v
     FVector LiftDir = Omega ^ Velocity; // Cross product
 
     if (LiftDir.IsNearlyZero())
@@ -506,16 +506,16 @@ bool ASkippingStone::ShouldBounce() const
     float Angle = ComputeIncidenceAngle();
     float Speed = Velocity.Size();
 
-    // "ÀÓ°è °¢µµ"¸¦ ¼Óµµ/Áú·®¿¡ µû¶ó Á¶Á¤ °¡´É (¿¹: ºü¸¦¼ö·Ï Á¶±Ý ´õ Ä¿µµ Æ¤´Ù)
+    // "ï¿½Ó°ï¿½ ï¿½ï¿½ï¿½ï¿½"ï¿½ï¿½ ï¿½Óµï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Ä¿ï¿½ï¿½ Æ¤ï¿½ï¿½)
     float DynamicCriticalAngle = CriticalBounceAngle + 5.f * FMath::Loge(Speed / 500.f + 1.f);
 
     float PitchPenalty = 0.f;
     float RollPenalty = 0.f;
 
-    // ¿¹½Ã: Pitch°¡ Å¬¼ö·Ï(¾ÕÀÌ ¸¹ÀÌ µé·È°Å³ª ¼÷¿©Á³°Å³ª) Á¶±Ý Æä³ÎÆ¼
+    // ï¿½ï¿½ï¿½ï¿½: Pitchï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È°Å³ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å³ï¿½) ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Æ¼
     PitchPenalty = FMath::Abs(TiltPitch) * 0.3f;
 
-    // RollÀº ÁÂ¿ì Àý´ë°ª¸¸ »ç¿ë (±â¿ï¼ö·Ï ¾È Æ¦)
+    // Rollï¿½ï¿½ ï¿½Â¿ï¿½ ï¿½ï¿½ï¿½ë°ªï¿½ï¿½ ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Æ¦)
     RollPenalty = FMath::Abs(TiltRoll) * 0.5f;
 
     float EffectiveAngle = Angle + PitchPenalty + RollPenalty;
