@@ -34,6 +34,5 @@ Download the release ZIP, unzip the folder, and run:
 
 ## 📄 License
 This project’s source code is released under the MIT License.  
-See the [LICENSE](LICENSE) file for details.
 
 Note: Game assets are rights-reserved and are not included in this repository.
