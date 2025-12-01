@@ -14,15 +14,23 @@ public class RippleRun : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"InputCore",
-			"EnhancedInput"
-		});
+			"EnhancedInput",
+			"UMG",
+			"CommonUI",
+			"CommonInput",
+			"GameplayTags",
+			"Niagara",
+        });
 		
 		PublicIncludePaths.AddRange(new string[]
 		{
 			"RippleRun"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"NiagaraCore",
+            "NiagaraShader"
+        });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
