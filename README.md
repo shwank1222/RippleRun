@@ -22,8 +22,8 @@ The goal was to recreate the simple, calming pleasure of throwing a stone into t
 - Small, focused UE5 framework optimized for rapid iteration
 
 ## 🎮 Controls
-Left Mouse Button — Set the throw power and yaw spin based on your timing
-Move Mouse — Adjust the stone’s tilt (pitch & roll) before throwing
+- Left Mouse Button — Set the throw power and yaw spin based on your timing
+- Move Mouse — Adjust the stone’s tilt (pitch & roll) before throwing
 
 ## 📦 Installation
 Download the release ZIP, unzip the folder, and run:
